@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.db.database import Base
@@ -57,4 +57,15 @@ class Client(Base):
         server_default=func.now(),
         onupdate=func.now(),
         nullable=False
+    )
+
+    # Relationships — added when Procedure, FollowUp, Sale were introduced
+    procedures: Mapped[list["Procedure"]] = relationship(
+        back_populates="client", cascade="all, delete-orphan"
+    )
+    follow_ups: Mapped[list["FollowUp"]] = relationship(
+        back_populates="client", cascade="all, delete-orphan"
+    )
+    sales: Mapped[list["Sale"]] = relationship(
+        back_populates="client", cascade="all, delete-orphan"
     )

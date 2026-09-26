@@ -1,111 +1,174 @@
-:root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+@import "tailwindcss";
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+/* ─────────────────────────────────────────────────────────────────────────────
+   SKIN GODDESS — Design Tokens (Tailwind v4 @theme)
+   
+   Primary brand:  #FFB0B6  (warm rose)
+   Everything else is derived to support the brand without overwhelming it.
+   ──────────────────────────────────────────────────────────────────────────── */
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@theme {
+  /* ── Brand palette ── */
+  --color-brand:           #FFB0B6;   /* The Skin Goddess brand color             */
+  --color-brand-hover:     #ffa0a7;   /* Slightly deeper on hover                 */
+  --color-brand-active:    #ff8f97;   /* Pressed / active state                   */
+  --color-brand-soft:      #fff0f1;   /* Tinted background: selected rows, chips  */
+  --color-brand-subtle:    #fff7f8;   /* Very light tint: hover backgrounds       */
+  --color-brand-strong:    #d4545d;   /* Accessible dark variant for text on white*/
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
+  /* ── Neutrals ── */
+  --color-background:      #f8f7f7;   /* Page background — off-white, never stark */
+  --color-surface:         #ffffff;   /* Cards, panels, inputs                    */
+  --color-surface-raised:  #ffffff;   /* Elevated surfaces (modals, dropdowns)    */
+  --color-border:          #e8e3e3;   /* Default border                           */
+  --color-border-subtle:   #f2eeee;   /* Very faint dividers                      */
+
+  /* ── Text ── */
+  --color-text:            #1c1917;   /* Primary text — near-black warm           */
+  --color-text-muted:      #78716c;   /* Secondary labels, captions               */
+  --color-text-disabled:   #c4bdb9;   /* Disabled inputs                          */
+  --color-text-inverse:    #ffffff;   /* Text on dark/colored backgrounds         */
+
+  /* ── Sidebar ── */
+  --color-sidebar:         #1c1917;   /* Sidebar background — warm dark           */
+  --color-sidebar-hover:   rgba(255,255,255,0.06);
+  --color-sidebar-active:  rgba(255,176,182,0.15); /* Brand tint on active item   */
+  --color-sidebar-text:    #a8a29e;   /* Nav labels at rest                       */
+  --color-sidebar-text-active: #ffffff;
+
+  /* ── Semantic ── */
+  --color-success:         #16a34a;
+  --color-success-bg:      #f0fdf4;
+  --color-warning:         #d97706;
+  --color-warning-bg:      #fffbeb;
+  --color-danger:          #dc2626;
+  --color-danger-bg:       #fef2f2;
+  --color-info:            #0284c7;
+  --color-info-bg:         #f0f9ff;
+
+  /* ── Typography ── */
+  --font-sans:   system-ui, 'Segoe UI', Roboto, -apple-system, sans-serif;
+  --font-mono:   ui-monospace, Consolas, 'Courier New', monospace;
+
+  /* ── Layout ── */
+  --sidebar-width:         240px;
+  --header-height:         56px;
+  --content-max:           1280px;
+
+  /* ── Radius ── */
+  --radius-sm:   4px;
+  --radius:      8px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.04);
+
+  /* ── Spacing additions ── */
+  --spacing-sidebar: var(--sidebar-width);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* ─────────────────────────────────────────────────────────────────────────────
+   BASE STYLES
+   ──────────────────────────────────────────────────────────────────────────── */
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
-}
-
-body {
-  margin: 0;
-}
-
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+*, *::before, *::after {
   box-sizing: border-box;
 }
 
-h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-background);
+  min-height: 100vh;
 }
-h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+
+#root {
+  display: flex;
+  min-height: 100vh;
 }
-p {
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SHADCN/UI CSS VARIABLE BRIDGE
+   shadcn components expect --background, --foreground, --primary etc.
+   We bridge them to our Skin Goddess tokens here.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --background:          var(--color-background);
+  --foreground:          var(--color-text);
+
+  --card:                var(--color-surface);
+  --card-foreground:     var(--color-text);
+
+  --popover:             var(--color-surface-raised);
+  --popover-foreground:  var(--color-text);
+
+  --primary:             var(--color-brand);
+  --primary-foreground:  #ffffff;
+
+  --secondary:           var(--color-brand-soft);
+  --secondary-foreground: var(--color-brand-strong);
+
+  --muted:               var(--color-border-subtle);
+  --muted-foreground:    var(--color-text-muted);
+
+  --accent:              var(--color-brand-subtle);
+  --accent-foreground:   var(--color-brand-strong);
+
+  --destructive:         var(--color-danger);
+  --destructive-foreground: #ffffff;
+
+  --border:              var(--color-border);
+  --input:               var(--color-border);
+  --ring:                var(--color-brand);
+
+  --radius:              var(--radius-md);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCROLLBAR — subtle, branded
+   ──────────────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-brand); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FOCUS RING — brand-colored, accessible
+   ──────────────────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TYPOGRAPHY RESET
+   ──────────────────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text);
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
-}
+p { margin: 0; color: var(--color-text-muted); }
 
-code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+a {
+  color: var(--color-brand-strong);
+  text-decoration: none;
 }
+a:hover { text-decoration: underline; }
