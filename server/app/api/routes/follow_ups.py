@@ -5,6 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 
+from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.follow_up import FollowUp
 from app.schemas.follow_up import FollowUpCreate, FollowUpResponse, FollowUpUpdate
@@ -12,6 +13,7 @@ from app.schemas.follow_up import FollowUpCreate, FollowUpResponse, FollowUpUpda
 router = APIRouter(
     prefix="/api/follow-ups",
     tags=["Follow-ups"],
+    dependencies=[Depends(get_current_user)],
 )
 
 

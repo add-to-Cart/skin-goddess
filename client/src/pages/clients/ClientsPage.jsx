@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Users, Search, X, ChevronRight } from 'lucide-react'
+import { Users, Search, X, ChevronRight, Plus } from 'lucide-react'
 import clientsService from '@/services/clientsService'
 import PageHeader from '@/components/shared/PageHeader'
 import LoadingState from '@/components/shared/LoadingState'
@@ -10,12 +10,14 @@ import { DataTable, MobileCard, MobileField } from '@/components/shared/DataTabl
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import ClientForm from './ClientForm'
 
 export default function ClientsPage() {
-  const [clients, setClients]   = useState([])
-  const [search, setSearch]     = useState('')
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState(null)
+  const [clients, setClients]     = useState([])
+  const [search, setSearch]       = useState('')
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
+  const [formOpen, setFormOpen]   = useState(false)
 
   function load(q = '') {
     setLoading(true)
@@ -37,26 +39,44 @@ export default function ClientsPage() {
     load('')
   }
 
+  function handleSaved(newClient) {
+    // Prepend or replace in list, then reload to get correct sort order
+    load(search)
+  }
+
   const empty = (
     <EmptyState
       icon={Users}
       title="No clients found"
-      description={search ? `No results for "${search}". Try a different name or phone number.` : 'Add your first client to get started.'}
-    />
+      description={
+        search
+          ? `No results for "${search}". Try a different name or phone number.`
+          : 'Add your first client to get started.'
+      }
+    >
+      {!search && (
+        <Button size="sm" onClick={() => setFormOpen(true)}>
+          <Plus className="h-4 w-4" /> Add Client
+        </Button>
+      )}
+    </EmptyState>
   )
 
   return (
     <div>
       <PageHeader title="Clients" subtitle="Manage client records">
-        {/* TODO: wire to AddClientModal */}
-        <Button size="sm">+ Add Client</Button>
+        <Button size="sm" onClick={() => setFormOpen(true)}>
+          <Plus className="h-4 w-4" /> Add Client
+        </Button>
       </PageHeader>
 
-      {/* Search bar */}
+      {/* Search */}
       <form onSubmit={handleSearch} className="flex items-center gap-2 mb-5">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
-            style={{ color: 'var(--color-text-muted)' }} />
+          <Search
+            className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none"
+            style={{ color: 'var(--color-text-muted)' }}
+          />
           <Input
             className="pl-8"
             placeholder="Search by name or phone…"
@@ -104,7 +124,9 @@ export default function ClientsPage() {
               key={c.id}
               actions={
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to={`/clients/${c.id}`}>View profile <ChevronRight className="h-3.5 w-3.5" /></Link>
+                  <Link to={`/clients/${c.id}`}>
+                    View profile <ChevronRight className="h-3.5 w-3.5" />
+                  </Link>
                 </Button>
               }
             >
@@ -127,6 +149,12 @@ export default function ClientsPage() {
           emptyState={empty}
         />
       )}
+
+      <ClientForm
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSaved={handleSaved}
+      />
     </div>
   )
 }

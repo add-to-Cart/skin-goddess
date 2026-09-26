@@ -11,6 +11,7 @@ import {
   Clock,
   Banknote,
   BarChart2,
+  Scissors,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -31,6 +32,7 @@ const NAV = [
   {
     section: 'Services',
     items: [
+      { to: '/services',   label: 'Services',    Icon: Scissors },
       { to: '/procedures', label: 'Procedures',  Icon: Stethoscope },
       { to: '/sales',      label: 'Sales',       Icon: ShoppingCart },
     ],

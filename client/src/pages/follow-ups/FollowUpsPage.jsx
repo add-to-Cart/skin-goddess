@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { CalendarClock } from 'lucide-react'
+import { CalendarClock, Plus } from 'lucide-react'
 import followUpsService from '@/services/followUpsService'
 import clientsService from '@/services/clientsService'
 import PageHeader from '@/components/shared/PageHeader'
@@ -10,6 +10,7 @@ import EmptyState from '@/components/shared/EmptyState'
 import { DataTable, MobileCard, MobileField } from '@/components/shared/DataTable'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import FollowUpForm from './FollowUpForm'
 
 const STATUS_FILTERS = ['all', 'upcoming', 'due', 'completed', 'cancelled']
 const STATUS_VARIANT = {
@@ -27,11 +28,12 @@ export default function FollowUpsPage() {
   const [statusFilter, setStatus]  = useState('all')
   const [loading, setLoading]      = useState(true)
   const [error, setError]          = useState(null)
+  const [formOpen, setFormOpen]    = useState(false)
+  const [editing, setEditing]      = useState(null)
 
-  useEffect(() => {
+  const loadAll = useCallback(() => {
     const params = statusFilter !== 'all' ? { status: statusFilter } : {}
     setLoading(true)
-
     Promise.all([
       followUpsService.getAll(params),
       followUpsService.getOverdue(),
@@ -48,10 +50,12 @@ export default function FollowUpsPage() {
       .finally(() => setLoading(false))
   }, [statusFilter])
 
+  useEffect(() => { loadAll() }, [loadAll])
+
   async function markComplete(id) {
     try {
       await followUpsService.update(id, { status: 'completed' })
-      setItems((prev) => prev.map((f) => (f.id === id ? { ...f, status: 'completed' } : f)))
+      loadAll()
     } catch (e) {
       alert(e.message)
     }
@@ -68,8 +72,9 @@ export default function FollowUpsPage() {
   return (
     <div>
       <PageHeader title="Follow-ups" subtitle="Track client return visits">
-        {/* TODO: Add Follow-up modal */}
-        <Button size="sm">+ Add Follow-up</Button>
+        <Button size="sm" onClick={() => { setEditing(null); setFormOpen(true) }}>
+          <Plus className="h-4 w-4" /> Add Follow-up
+        </Button>
       </PageHeader>
 
       {overdueCount > 0 && (
@@ -124,9 +129,14 @@ export default function FollowUpsPage() {
               {f.notes ?? '—'}
             </span>,
             f.status !== 'completed' && f.status !== 'cancelled' ? (
-              <Button variant="ghost" size="sm" onClick={() => markComplete(f.id)}>
-                Mark done
-              </Button>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" onClick={() => markComplete(f.id)}>
+                  Mark done
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => { setEditing(f); setFormOpen(true) }}>
+                  Edit
+                </Button>
+              </div>
             ) : null,
           ])}
           mobileRows={items.map((f) => (
@@ -162,6 +172,13 @@ export default function FollowUpsPage() {
           emptyState={empty}
         />
       )}
+
+      <FollowUpForm
+        open={formOpen}
+        onClose={() => { setFormOpen(false); setEditing(null) }}
+        onSaved={() => { setFormOpen(false); setEditing(null); loadAll() }}
+        followUp={editing}
+      />
     </div>
   )
 }

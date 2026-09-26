@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.payment import Payment
 from app.models.sale import Sale
@@ -15,6 +16,7 @@ from app.schemas.payment import (
 router = APIRouter(
     prefix="/api/payments",
     tags=["Payments"],
+    dependencies=[Depends(get_current_user)],
 )
 
 

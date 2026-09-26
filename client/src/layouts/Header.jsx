@@ -1,10 +1,12 @@
-import { useLocation } from 'react-router-dom'
-import { Menu } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { Menu, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import authService from '@/services/authService'
 
 const PAGE_TITLES = {
   '/':           'Dashboard',
   '/clients':    'Clients',
+  '/services':   'Services',
   '/follow-ups': 'Follow-ups',
   '/procedures': 'Procedures',
   '/sales':      'Sales',
@@ -26,17 +28,23 @@ function getTitle(pathname) {
 
 export default function Header({ onMenuClick }) {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
   const title = getTitle(pathname)
+
+  function handleLogout() {
+    authService.logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <header
       className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b px-4 lg:px-6"
       style={{
-        background: 'var(--color-surface)',
+        background:  'var(--color-surface)',
         borderColor: 'var(--color-border)',
       }}
     >
-      {/* Hamburger — visible only on mobile */}
+      {/* Hamburger — mobile only */}
       <Button
         variant="ghost"
         size="icon-sm"
@@ -51,17 +59,27 @@ export default function Header({ onMenuClick }) {
         {title}
       </span>
 
-      {/* Right slot — reserved for future user menu / notifications */}
-      <div className="ml-auto flex items-center gap-2">
+      {/* Right slot */}
+      <div className="ml-auto flex items-center gap-3">
         <span
           className="hidden sm:inline-flex text-xs font-medium px-2 py-0.5 rounded-full"
           style={{
             background: 'var(--color-brand-soft)',
-            color: 'var(--color-brand-strong)',
+            color:      'var(--color-brand-strong)',
           }}
         >
           Skin Goddess
         </span>
+
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          onClick={handleLogout}
+          aria-label="Sign out"
+          title="Sign out"
+        >
+          <LogOut className="h-4 w-4" style={{ color: 'var(--color-text-muted)' }} />
+        </Button>
       </div>
     </header>
   )

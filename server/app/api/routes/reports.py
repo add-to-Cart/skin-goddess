@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.expense import Expense
 from app.models.follow_up import FollowUp
@@ -17,6 +18,7 @@ from app.models.sale import Sale
 router = APIRouter(
     prefix="/api/reports",
     tags=["Reports"],
+    dependencies=[Depends(get_current_user)],
 )
 
 

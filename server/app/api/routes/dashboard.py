@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.attendance import Attendance
 from app.models.client import Client
@@ -18,6 +19,7 @@ from app.schemas.dashboard import DashboardResponse, LowStockItem, UpcomingFollo
 router = APIRouter(
     prefix="/api/dashboard",
     tags=["Dashboard"],
+    dependencies=[Depends(get_current_user)],
 )
 
 

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.inventory_item import InventoryItem
 from app.models.inventory_purchase import InventoryPurchase, InventoryPurchaseItem
@@ -21,6 +22,7 @@ from app.schemas.inventory import (
 router = APIRouter(
     prefix="/api/inventory",
     tags=["Inventory"],
+    dependencies=[Depends(get_current_user)],
 )
 
 

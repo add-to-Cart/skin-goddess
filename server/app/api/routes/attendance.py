@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.attendance import Attendance
 from app.schemas.attendance import AttendanceCreate, AttendanceResponse, AttendanceUpdate
@@ -11,6 +12,7 @@ from app.schemas.attendance import AttendanceCreate, AttendanceResponse, Attenda
 router = APIRouter(
     prefix="/api/attendance",
     tags=["Attendance"],
+    dependencies=[Depends(get_current_user)],
 )
 
 
@@ -19,6 +21,22 @@ def create_attendance(
     data: AttendanceCreate,
     db: Session = Depends(get_db),
 ):
+    # Prevent duplicate attendance for the same employee on the same date
+    existing = db.scalar(
+        select(Attendance).where(
+            Attendance.employee_id == data.employee_id,
+            Attendance.attendance_date == data.attendance_date,
+        )
+    )
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Attendance already recorded for this employee on "
+                f"{data.attendance_date}. Use PATCH to update it."
+            ),
+        )
+
     record = Attendance(**data.model_dump())
     db.add(record)
     db.commit()

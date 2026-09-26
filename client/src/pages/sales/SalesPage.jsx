@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { ShoppingCart, ChevronRight } from 'lucide-react'
+import { ShoppingCart, ChevronRight, Plus } from 'lucide-react'
 import salesService from '@/services/salesService'
 import clientsService from '@/services/clientsService'
 import { formatCurrency } from '@/lib/utils'
@@ -11,6 +11,7 @@ import EmptyState from '@/components/shared/EmptyState'
 import { DataTable, MobileCard, MobileField } from '@/components/shared/DataTable'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import SaleForm from './SaleForm'
 
 const STATUS_FILTERS = ['all', 'unpaid', 'partial', 'paid']
 const STATUS_VARIANT = { paid: 'success', partial: 'warning', unpaid: 'danger' }
@@ -21,8 +22,9 @@ export default function SalesPage() {
   const [statusFilter, setStatus] = useState('all')
   const [loading, setLoading]     = useState(true)
   const [error, setError]         = useState(null)
+  const [formOpen, setFormOpen]   = useState(false)
 
-  useEffect(() => {
+  const loadAll = useCallback(() => {
     setLoading(true)
     Promise.all([
       salesService.getAll(statusFilter !== 'all' ? { payment_status: statusFilter } : {}),
@@ -38,6 +40,8 @@ export default function SalesPage() {
       .finally(() => setLoading(false))
   }, [statusFilter])
 
+  useEffect(() => { loadAll() }, [loadAll])
+
   const total = sales.reduce((s, sale) => s + Number(sale.total_amount), 0)
 
   const empty = (
@@ -51,8 +55,9 @@ export default function SalesPage() {
   return (
     <div>
       <PageHeader title="Sales" subtitle="Transaction history">
-        {/* TODO: Add Sale modal */}
-        <Button size="sm">+ Add Sale</Button>
+        <Button size="sm" onClick={() => setFormOpen(true)}>
+          <Plus className="h-4 w-4" /> Add Sale
+        </Button>
       </PageHeader>
 
       {/* Filter tabs + summary */}
@@ -131,6 +136,12 @@ export default function SalesPage() {
           emptyState={empty}
         />
       )}
+
+      <SaleForm
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        onSaved={(sale) => { setFormOpen(false); loadAll() }}
+      />
     </div>
   )
 }

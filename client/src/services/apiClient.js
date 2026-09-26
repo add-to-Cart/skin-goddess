@@ -2,42 +2,50 @@
  * Base API client.
  *
  * All requests go through the Vite proxy → FastAPI.
- * Base URL is /api — no hardcoded host, so it works in dev and prod unchanged.
- *
- * Usage:
- *   import api from './apiClient'
- *   const clients = await api.get('/clients')
- *   const created  = await api.post('/clients', { first_name: 'Maria', ... })
+ * Automatically attaches the JWT from localStorage if present.
+ * On 401 responses the stored token is cleared and the page reloads
+ * to the login screen.
  */
 
 const BASE = '/api'
 
-async function request(method, path, body = undefined) {
-  const options = {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-  }
+const TOKEN_KEY = 'sg_token'
 
-  if (body !== undefined) {
-    options.body = JSON.stringify(body)
-  }
+export const tokenStore = {
+  get:    ()         => localStorage.getItem(TOKEN_KEY),
+  set:    (token)    => localStorage.setItem(TOKEN_KEY, token),
+  clear:  ()         => localStorage.removeItem(TOKEN_KEY),
+}
+
+async function request(method, path, body = undefined) {
+  const headers = { 'Content-Type': 'application/json' }
+  const token = tokenStore.get()
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
+  const options = { method, headers }
+  if (body !== undefined) options.body = JSON.stringify(body)
 
   const response = await fetch(`${BASE}${path}`, options)
 
-  // 204 No Content — return null, not JSON
+  // 204 No Content
   if (response.status === 204) return null
+
+  // 401 — token expired or invalid
+  if (response.status === 401) {
+    tokenStore.clear()
+    window.location.href = '/login'
+    throw new Error('Session expired. Please log in again.')
+  }
 
   const data = await response.json()
 
   if (!response.ok) {
-    // FastAPI validation errors come back as { detail: [...] }
     const message =
       typeof data?.detail === 'string'
         ? data.detail
         : Array.isArray(data?.detail)
           ? data.detail.map((e) => e.msg).join(', ')
           : `Request failed: ${response.status}`
-
     throw new Error(message)
   }
 
@@ -45,11 +53,11 @@ async function request(method, path, body = undefined) {
 }
 
 const api = {
-  get:    (path)         => request('GET',    path),
-  post:   (path, body)   => request('POST',   path, body),
-  patch:  (path, body)   => request('PATCH',  path, body),
-  put:    (path, body)   => request('PUT',    path, body),
-  delete: (path)         => request('DELETE', path),
+  get:    (path)       => request('GET',    path),
+  post:   (path, body) => request('POST',   path, body),
+  patch:  (path, body) => request('PATCH',  path, body),
+  put:    (path, body) => request('PUT',    path, body),
+  delete: (path)       => request('DELETE', path),
 }
 
 export default api

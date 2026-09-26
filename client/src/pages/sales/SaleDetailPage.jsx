@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Download, Mail } from 'lucide-react'
+import { ArrowLeft, Download, Mail, Plus } from 'lucide-react'
 import paymentsService from '@/services/paymentsService'
 import salesService from '@/services/salesService'
 import invoiceService from '@/services/invoiceService'
@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import PaymentForm from './PaymentForm'
 
 const STATUS_VARIANT = { paid: 'success', partial: 'warning', unpaid: 'danger' }
 
@@ -129,8 +130,10 @@ export default function SaleDetailPage() {
   const [downloading, setDownloading] = useState(false)
   const [downloadError, setDownloadError] = useState(null)
   const [emailOpen, setEmailOpen]     = useState(false)
+  const [paymentOpen, setPaymentOpen] = useState(false)
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
+    setLoading(true)
     Promise.all([
       salesService.getById(id),
       paymentsService.getHistoryBySale(id),
@@ -138,7 +141,6 @@ export default function SaleDetailPage() {
       .then(([s, h]) => {
         setSale(s)
         setHistory(h)
-        // Fetch client email for the invoice dialog
         return clientsService.getById(s.client_id)
           .then((c) => { if (c?.email) setClientEmail(c.email) })
           .catch(() => null)
@@ -146,6 +148,8 @@ export default function SaleDetailPage() {
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }, [id])
+
+  useEffect(() => { loadData() }, [loadData])
 
   async function handleDownload() {
     setDownloading(true)
@@ -195,8 +199,9 @@ export default function SaleDetailPage() {
           <Mail className="h-4 w-4" />
           Send Invoice
         </Button>
-        {/* TODO: Record Payment modal */}
-        <Button size="sm">+ Record Payment</Button>
+        <Button size="sm" onClick={() => setPaymentOpen(true)}>
+          <Plus className="h-4 w-4" /> Record Payment
+        </Button>
       </PageHeader>
 
       {downloadError && <ErrorState message={downloadError} className="mb-4" />}
@@ -268,6 +273,15 @@ export default function SaleDetailPage() {
         saleId={Number(id)}
         clientEmail={clientEmail}
         invoiceNumber={invoiceNumber}
+      />
+
+      {/* Record Payment Dialog */}
+      <PaymentForm
+        open={paymentOpen}
+        onClose={() => setPaymentOpen(false)}
+        saleId={Number(id)}
+        remainingBalance={history?.remaining_balance ?? null}
+        onSaved={() => { setPaymentOpen(false); loadData() }}
       />
     </div>
   )

@@ -5,6 +5,7 @@ from fastapi.responses import Response
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.client import Client
 from app.models.payment import Payment
@@ -22,6 +23,7 @@ from app.services.invoice_service import build_invoice_context, render_invoice_p
 router = APIRouter(
     prefix="/api/sales",
     tags=["Sales"],
+    dependencies=[Depends(get_current_user)],
 )
 
 

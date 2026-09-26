@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
+from app.auth.dependencies import get_current_user
 from app.db.session import get_db
 from app.models.expense import Expense
 from app.schemas.expense import ExpenseCreate, ExpenseResponse, ExpenseUpdate
@@ -11,6 +12,7 @@ from app.schemas.expense import ExpenseCreate, ExpenseResponse, ExpenseUpdate
 router = APIRouter(
     prefix="/api/expenses",
     tags=["Expenses"],
+    dependencies=[Depends(get_current_user)],
 )
 
 
