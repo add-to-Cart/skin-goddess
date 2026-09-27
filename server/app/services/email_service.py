@@ -153,8 +153,14 @@ An official receipt will be issued separately as required by the BIR.
     )
     msg.attach(pdf_attachment)
 
-    # ── Send via SMTP with STARTTLS (port 587) ────────────────────────────────
-    with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30) as server:
+    # Port 465 uses implicit TLS; other configured ports use STARTTLS.
+    smtp_connection = (
+      smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=30)
+      if SMTP_PORT == 465
+      else smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30)
+    )
+    with smtp_connection as server:
+      if SMTP_PORT != 465:
         server.ehlo()
         server.starttls()
         server.ehlo()
