@@ -1,6 +1,6 @@
-import { tokenStore } from './apiClient'
+import { tokenStore, VITE_API_BASE } from './apiClient'
 
-const BASE = '/api/auth'
+const BASE = `${VITE_API_BASE}/api/auth`
 
 /**
  * POST /api/auth/login
