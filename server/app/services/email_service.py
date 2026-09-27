@@ -160,9 +160,9 @@ An official receipt will be issued separately as required by the BIR.
       else smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=30)
     )
     with smtp_connection as server:
-      if SMTP_PORT != 465:
-        server.ehlo()
-        server.starttls()
-        server.ehlo()
+        if SMTP_PORT != 465:
+            server.ehlo()
+            server.starttls()
+            server.ehlo()
         server.login(SMTP_USER, SMTP_PASSWORD)
         server.sendmail(SMTP_FROM, recipient_email, msg.as_string())
