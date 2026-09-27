@@ -25,6 +25,9 @@ server/.env
 .env
 *.env
 .env.*
+# explicitly allow the safe example template
+!.env.example
+!server/.env.example
 
 # Alembic compiled cache
 alembic/__pycache__/

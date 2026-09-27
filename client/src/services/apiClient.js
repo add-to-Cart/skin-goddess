@@ -1,20 +1,29 @@
 /**
  * Base API client.
  *
- * All requests go through the Vite proxy → FastAPI.
- * Automatically attaches the JWT from localStorage if present.
- * On 401 responses the stored token is cleared and the page reloads
- * to the login screen.
+ * Development:  requests go to /api  — the Vite proxy forwards them to
+ *               http://localhost:8000.  No environment variable needed.
+ *
+ * Production:   set VITE_API_BASE_URL in your hosting dashboard to the full
+ *               backend URL, e.g. https://skin-goddess-api.onrender.com
+ *               The build will bake this value in at compile time.
+ *
+ * VITE_API_BASE is exported so raw-fetch callers (invoiceService.js)
+ * use the same resolved base URL.
  */
 
-const BASE = '/api'
+// Vite replaces import.meta.env.VITE_* at build time.
+// In dev (no env var set) this resolves to '', keeping /api relative.
+export const VITE_API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+
+const BASE = `${VITE_API_BASE}/api`
 
 const TOKEN_KEY = 'sg_token'
 
 export const tokenStore = {
-  get:    ()         => localStorage.getItem(TOKEN_KEY),
-  set:    (token)    => localStorage.setItem(TOKEN_KEY, token),
-  clear:  ()         => localStorage.removeItem(TOKEN_KEY),
+  get:   ()      => localStorage.getItem(TOKEN_KEY),
+  set:   (token) => localStorage.setItem(TOKEN_KEY, token),
+  clear: ()      => localStorage.removeItem(TOKEN_KEY),
 }
 
 async function request(method, path, body = undefined) {

@@ -1,0 +1,89 @@
+# ============================================================
+# Skin Goddess — Render Deployment Manifest
+# ============================================================
+# This file defines the two services deployed on Render:
+#   1. skin-goddess-api   — FastAPI backend (Render Free Web Service)
+#   2. skin-goddess-web   — React static site (Render Free Static Site)
+#
+# SECRETS: Do NOT put real values here.
+# Set all secret environment variables in the Render dashboard under
+# Environment → Secret Files or individual env var entries.
+# ============================================================
+
+services:
+
+  # ── FastAPI backend ─────────────────────────────────────────────────────────
+  - type: web
+    name: skin-goddess-api
+    runtime: python
+    region: singapore          # closest to Philippines; change if needed
+    plan: free
+    rootDir: server
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+
+    envVars:
+      # APP_ENV must be "production" so the startup safety checks run.
+      - key: APP_ENV
+        value: production
+
+      # Set these in the Render dashboard — do not add real values here.
+      - key: DATABASE_URL
+        sync: false            # Render will prompt you to enter this manually
+
+      - key: SECRET_KEY
+        generateValue: true    # Render auto-generates a cryptographically random value
+
+      - key: ADMIN_USERNAME
+        sync: false
+
+      - key: ADMIN_PASSWORD
+        sync: false
+
+      # Frontend origin — set to the Render static site URL after first deploy.
+      # Example: https://skin-goddess-web.onrender.com
+      - key: CORS_ORIGINS
+        sync: false
+
+      # Business info for invoices (not secret, but convenient to set here)
+      - key: BUSINESS_NAME
+        value: Skin Goddess Clinic
+
+      - key: BUSINESS_TAGLINE
+        value: Beauty & Aesthetic Services
+
+      # SMTP is optional. Leave blank to disable invoice email.
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+
+  # ── React frontend ───────────────────────────────────────────────────────────
+  - type: web
+    name: skin-goddess-web
+    runtime: static
+    region: singapore
+    plan: free
+    rootDir: client
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+
+    # SPA routing: all paths return index.html so React Router handles them.
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+    envVars:
+      # The full URL of the deployed API (skin-goddess-api above).
+      # Set this in the Render dashboard after the API service is created.
+      # Example: https://skin-goddess-api.onrender.com
+      - key: VITE_API_BASE_URL
+        sync: false
