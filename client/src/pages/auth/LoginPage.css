@@ -1,0 +1,145 @@
+.login-shell {
+  position: relative;
+  display: grid;
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+  place-items: center;
+  overflow: hidden;
+  padding: 28px 20px;
+  background-color: #f4f1eb;
+  background-image:
+    linear-gradient(rgba(57, 77, 65, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(57, 77, 65, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.login-panel {
+  width: min(100%, 410px);
+  padding: 38px 36px 26px;
+  border: 1px solid rgba(57, 77, 65, 0.13);
+  border-radius: 8px;
+  background: #fffefa;
+  box-shadow: 0 22px 60px rgba(39, 50, 43, 0.11);
+  animation: login-arrive 420ms ease-out both;
+}
+
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 34px;
+}
+
+.login-mark {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  place-items: center;
+  border-radius: 6px;
+  background: #e9a5a5;
+  color: #302c28;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.login-eyebrow {
+  color: #385747;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.login-intro {
+  margin-bottom: 27px;
+}
+
+.login-intro h1 {
+  color: #252b26;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.login-intro p {
+  margin-top: 8px;
+  color: #77766e;
+  font-size: 14px;
+}
+
+.login-label {
+  color: #393d38;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.login-input {
+  height: 44px;
+  border-radius: 5px;
+  border-color: #d9d8d0;
+  background: #fff;
+}
+
+.login-submit[data-slot='button'] {
+  height: 46px;
+  border-radius: 5px;
+  background: #385747;
+  color: #fffefa;
+  font-weight: 600;
+}
+
+.login-submit[data-slot='button']:hover {
+  background: #2d493a;
+}
+
+.login-error {
+  margin: 0;
+  border: 1px solid #efc7c1;
+  border-radius: 5px;
+  padding: 10px 12px;
+  background: #fff2ef;
+  color: #963f36;
+  font-size: 13px;
+}
+
+.login-footer {
+  margin-top: 25px;
+  border-top: 1px solid #eeece5;
+  padding-top: 17px;
+  color: #97948b;
+  font-size: 11px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@keyframes login-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .login-shell {
+    padding: 16px;
+  }
+
+  .login-panel {
+    padding: 30px 24px 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-panel {
+    animation: none;
+  }
+}

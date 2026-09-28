@@ -32,7 +32,7 @@ development proxy is **not** used in production.
 - **Cold starts:** Render Free web services spin down after 15 minutes of inactivity. The first request after inactivity can take 30–60 seconds.
 - **Supabase Free expiry:** Supabase Free projects are paused after 7 days of inactivity and deleted after 90 days of inactivity. Enable "No pausing" in the project settings if available on your plan.
 - **No backups on free tiers.** Render Free does not persist disk state between restarts. Supabase Free does not include automated backups.
-- **Invoice email may not work.** Render Free blocks outbound SMTP on ports 587 and 465. Use Brevo or configure SMTP credentials only — do not promise this feature works until you verify it on your specific deployment.
+- **Invoice email:** Render Free blocks outbound SMTP on ports 465 and 587. Configure the Mailjet HTTPS API below; SMTP is only an optional alternative on hosts that permit outbound SMTP.
 - **60-connection limit on Supabase Free.** Set `pool_size=3, max_overflow=2` in `server/app/db/database.py` if you hit connection limit errors.
 
 ---
@@ -83,11 +83,19 @@ development proxy is **not** used in production.
    | `BUSINESS_ADDRESS` | your address | No |
    | `BUSINESS_PHONE` | your phone | No |
    | `BUSINESS_EMAIL` | your email | No |
-   | `SMTP_HOST` | smtp.gmail.com or smtp-relay.brevo.com | No |
-   | `SMTP_PORT` | 587 | No |
-   | `SMTP_USER` | your email or Brevo login | **Yes** |
-   | `SMTP_PASSWORD` | your app password | **Yes** |
-   | `SMTP_FROM` | your from address | No |
+   | `EMAIL_PROVIDER` | `mailjet` | No |
+   | `MAILJET_API_KEY` | API key from Mailjet account settings | **Yes** |
+   | `MAILJET_SECRET_KEY` | API secret paired with the API key | **Yes** |
+   | `EMAIL_FROM` | verified sender email address in Mailjet | No |
+   | `EMAIL_FROM_NAME` | Skin Goddess Clinic | No |
+
+   In Mailjet, find your API key and secret in account settings, then verify
+   the sender address under sender/domain settings. Store both credentials only
+   in Render's environment settings. The backend uses Mailjet's HTTPS Send API
+   and attaches the generated PDF; no SMTP port is needed on Render Free. The
+   optional SMTP mode is for other hosts only: set `EMAIL_PROVIDER=smtp` and
+   configure `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, and
+   `SMTP_FROM`.
 
 5. Click **Create Web Service**. Wait for the first deploy to complete.
 6. Note the service URL, e.g. `https://skin-goddess-api.onrender.com`.
@@ -219,11 +227,11 @@ Use this checklist when you are ready to run the app with real clinic data.
 
 - [ ] `CORS_ORIGINS` set to exactly your production frontend URL — no wildcard, no extra origins.
 
-### SMTP / email
+### Email
 
-- [ ] If invoice email is needed, use a transactional relay (Brevo free: 300/day; SendGrid free: 100/day).
+- [ ] Configure Mailjet's HTTPS API (`EMAIL_PROVIDER=mailjet`, `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, and `EMAIL_FROM`).
 - [ ] Verify by sending a test invoice and confirming receipt.
-- [ ] Note: direct SMTP to Gmail/Outlook from cloud hosts is often blocked. Use a relay.
+- [ ] SMTP is an optional alternative only where outbound SMTP is allowed; Render Free blocks ports 465 and 587.
 
 ### Backups and restore testing
 
@@ -271,11 +279,17 @@ Use this checklist when you are ready to run the app with real clinic data.
 | `BUSINESS_ADDRESS` | No | No | *(empty)* | Shown on invoices |
 | `BUSINESS_PHONE` | No | No | *(empty)* | Shown on invoices |
 | `BUSINESS_EMAIL` | No | No | *(empty)* | Shown on invoices |
-| `SMTP_HOST` | No | No | `smtp.gmail.com` | Required for invoice email |
-| `SMTP_PORT` | No | No | `587` | Required for invoice email |
-| `SMTP_USER` | No | **Yes** | *(empty)* | Required for invoice email |
-| `SMTP_PASSWORD` | No | **Yes** | *(empty)* | Required for invoice email |
-| `SMTP_FROM` | No | No | = `SMTP_USER` | From address on invoice emails |
+| `EMAIL_PROVIDER` | No | No | `mailjet` | Invoice email provider (`mailjet`, `brevo`, or optional `smtp`) |
+| `MAILJET_API_KEY` | Required for Mailjet | **Yes** | *(empty)* | Mailjet API key; configure only in the hosting dashboard |
+| `MAILJET_SECRET_KEY` | Required for Mailjet | **Yes** | *(empty)* | Mailjet API secret; configure only in the hosting dashboard |
+| `BREVO_API_KEY` | Required for Brevo | **Yes** | *(empty)* | Brevo API key; configure only in the hosting dashboard |
+| `EMAIL_FROM` | Required for API providers | No | *(empty)* | Sender email address verified with the selected provider |
+| `EMAIL_FROM_NAME` | No | No | `BUSINESS_NAME` | Sender name shown on invoice emails |
+| `SMTP_HOST` | Required for SMTP mode | No | `smtp.gmail.com` | Optional SMTP server |
+| `SMTP_PORT` | Required for SMTP mode | No | `587` | Optional SMTP port; 465 uses implicit TLS |
+| `SMTP_USER` | Required for SMTP mode | **Yes** | *(empty)* | Optional SMTP username |
+| `SMTP_PASSWORD` | Required for SMTP mode | **Yes** | *(empty)* | Optional SMTP password |
+| `SMTP_FROM` | Required for SMTP mode | No | = `SMTP_USER` | Optional SMTP sender address |
 | `VITE_API_BASE_URL` | **Yes (prod)** | No | *(empty = relative)* | Set on the frontend service at build time |
 
 ---

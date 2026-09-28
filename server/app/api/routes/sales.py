@@ -17,7 +17,11 @@ from app.schemas.sale import (
     SaleSummaryResponse,
     SaleUpdate,
 )
-from app.services.email_service import send_invoice_email
+from app.services.email_service import (
+    EmailConfigurationError,
+    EmailDeliveryError,
+    send_invoice_email,
+)
 from app.services.invoice_service import build_invoice_context, render_invoice_pdf
 
 router = APIRouter(
@@ -189,8 +193,11 @@ def download_invoice(
 
     try:
         pdf_bytes = render_invoice_pdf(db, sale_id)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"PDF generation failed: {exc}")
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Invoice PDF generation failed. Please try again later.",
+        )
 
     invoice_number = f"INV-{sale_id:05d}"
 
@@ -235,11 +242,19 @@ def send_invoice(
 
     try:
         pdf_bytes = render_invoice_pdf(db, sale_id)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"PDF generation failed: {exc}")
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Invoice PDF generation failed. Please try again later.",
+        )
 
-    # Build context for the email body fields
-    ctx = build_invoice_context(db, sale_id)
+    try:
+        ctx = build_invoice_context(db, sale_id)
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Invoice details could not be prepared. Please try again later.",
+        )
 
     try:
         send_invoice_email(
@@ -252,11 +267,15 @@ def send_invoice(
             remaining_balance=ctx["remaining_balance"],
             business_name=ctx["business"]["name"],
         )
-    except RuntimeError as exc:
-        # SMTP not configured
+    except EmailConfigurationError as exc:
         raise HTTPException(status_code=503, detail=str(exc))
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=f"Email sending failed: {exc}")
+    except EmailDeliveryError as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+    except Exception:
+        raise HTTPException(
+            status_code=502,
+            detail="Invoice email could not be sent. Please try again later.",
+        )
 
     return {
         "message": f"Invoice {ctx['invoice_number']} sent to {email}",

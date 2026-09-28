@@ -125,11 +125,11 @@ migration to seed the first admin from the current `ADMIN_PASSWORD` env var.
 |---|---|---|
 | Generate PDF invoice | ✅ | Jinja2 template rendered to PDF via xhtml2pdf. Includes line items, totals, payment history, BIR disclaimer. |
 | Download invoice as PDF | ✅ | Authenticated — requires valid Bearer token. |
-| Email invoice to client | ✅ | SMTP via stdlib `smtplib`. Requires `SMTP_USER` and `SMTP_PASSWORD` to be configured. |
+| Email invoice to client | ✅ | Mailjet HTTPS API by default; requires `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, and a verified `EMAIL_FROM`. Brevo and SMTP are optional alternatives. |
 | Email with custom recipient | ✅ | Override the client's email on file via the dialog. |
 | Invoice branding | ⚠️ | Template uses old purple (`#9b59b6`) accent color, not the current `#FFB0B6` brand. Functional but visually inconsistent. |
 
-**Email availability warning:** Direct SMTP on ports 587/465 is blocked by Render Free and some other cloud hosts. If deployed on Render Free, invoice email will fail with a connection error. Use a transactional relay (Brevo free tier, SendGrid) and configure it in the environment variables.
+**Email availability warning:** Render Free blocks outbound SMTP on ports 587/465. The configured Mailjet HTTPS API works over outbound HTTPS; set `EMAIL_PROVIDER=mailjet`, `MAILJET_API_KEY`, `MAILJET_SECRET_KEY`, and verified sender `EMAIL_FROM` in the deployment environment.
 
 ---
 

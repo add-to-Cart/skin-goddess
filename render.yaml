@@ -53,17 +53,17 @@ services:
       - key: BUSINESS_TAGLINE
         value: Beauty & Aesthetic Services
 
-      # SMTP is optional. Leave blank to disable invoice email.
-      - key: SMTP_HOST
+      # Mailjet HTTPS API is used for invoice email; SMTP is blocked on Render Free.
+      - key: EMAIL_PROVIDER
+        value: mailjet
+      - key: MAILJET_API_KEY
         sync: false
-      - key: SMTP_PORT
+      - key: MAILJET_SECRET_KEY
         sync: false
-      - key: SMTP_USER
+      - key: EMAIL_FROM
         sync: false
-      - key: SMTP_PASSWORD
-        sync: false
-      - key: SMTP_FROM
-        sync: false
+      - key: EMAIL_FROM_NAME
+        value: Skin Goddess Clinic
 
   # ── React frontend ───────────────────────────────────────────────────────────
   - type: web

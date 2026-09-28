@@ -4,6 +4,7 @@ import authService from '@/services/authService'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import './LoginPage.css'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -31,37 +32,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'var(--color-background)' }}
-    >
-      <div
-        className="w-full max-w-sm rounded-2xl border shadow-[var(--shadow-lg)] p-8"
-        style={{
-          background:   'var(--color-surface)',
-          borderColor:  'var(--color-border)',
-        }}
-      >
-        {/* Brand mark */}
-        <div className="flex flex-col items-center gap-2 mb-8">
-          <div
-            className="h-12 w-12 rounded-full flex items-center justify-center text-white font-bold text-lg"
-            style={{ background: 'var(--color-brand)' }}
-          >
-            SG
-          </div>
-          <h1 className="text-xl font-semibold" style={{ color: 'var(--color-text)' }}>
-            Skin Goddess
-          </h1>
-          <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>
-            Clinic Management System
-          </p>
+    <main className="login-shell">
+      <section className="login-panel" aria-labelledby="login-heading">
+        <div className="login-brand">
+          <div className="login-mark" aria-hidden="true">SG</div>
+          <p className="login-eyebrow">Skin Goddess Clinic</p>
+        </div>
+
+        <div className="login-intro">
+          <h1 id="login-heading">Welcome back</h1>
+          <p>Sign in to continue to your workspace.</p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="username">Username</Label>
+            <Label className="login-label" htmlFor="username">Username</Label>
             <Input
+              className="login-input"
               id="username"
               type="text"
               autoComplete="username"
@@ -73,8 +60,9 @@ export default function LoginPage() {
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="password">Password</Label>
+            <Label className="login-label" htmlFor="password">Password</Label>
             <Input
+              className="login-input"
               id="password"
               type="password"
               autoComplete="current-password"
@@ -86,7 +74,7 @@ export default function LoginPage() {
 
           {error && (
             <p
-              className="text-sm rounded-lg px-3 py-2"
+              className="login-error"
               role="alert"
               style={{
                 background: 'var(--color-danger-bg)',
@@ -97,11 +85,13 @@ export default function LoginPage() {
             </p>
           )}
 
-          <Button type="submit" disabled={loading} className="w-full mt-2">
+          <Button type="submit" disabled={loading} className="login-submit w-full mt-2">
             {loading ? 'Signing in…' : 'Sign in'}
           </Button>
         </form>
-      </div>
-    </div>
+
+        <p className="login-footer">Private clinic portal</p>
+      </section>
+    </main>
   )
 }
