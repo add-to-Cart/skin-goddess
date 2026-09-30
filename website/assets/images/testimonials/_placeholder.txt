@@ -1,0 +1,9 @@
+TESTIMONIAL PHOTOS (optional)
+-----------------------------
+Client photos — only with explicit consent from the customer.
+80×80px minimum. WebP or JPEG. Will be displayed cropped as a circle.
+
+Naming suggestion: client-initials.webp (e.g. ms.webp for Maria S.)
+
+Set path in content.js → TESTIMONIALS[n].image = 'assets/images/testimonials/FILENAME.webp'
+Leave image as '' to show an initial-letter avatar instead.

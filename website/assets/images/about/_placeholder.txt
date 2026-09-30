@@ -1,0 +1,5 @@
+ABOUT IMAGE
+-----------
+about.webp   — Portrait: 800×1000px, or Landscape: 800×600px. WebP preferred.
+               Subject: owner, team photo, or lounge interior.
+               Set path in content.js → ABOUT.image = 'assets/images/about/about.webp'

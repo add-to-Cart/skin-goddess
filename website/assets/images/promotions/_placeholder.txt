@@ -1,0 +1,10 @@
+PROMOTION IMAGES
+----------------
+One image per promotion. 4:3 ratio. 800×600px minimum. WebP preferred.
+
+Naming matches the promotion id in content.js:
+  promo-1.webp
+  promo-2.webp
+  ... etc.
+
+Set path in content.js → PROMOTIONS[n].image = 'assets/images/promotions/promo-N.webp'

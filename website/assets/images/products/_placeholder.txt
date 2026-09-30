@@ -1,0 +1,11 @@
+PRODUCT IMAGES
+--------------
+One image per product. 1:1 ratio (square). 600×600px minimum. WebP preferred.
+Shoot on a clean neutral background.
+
+Naming matches the product id in content.js:
+  product-1.webp
+  product-2.webp
+  ... etc.
+
+Set path in content.js → PRODUCTS[n].image = 'assets/images/products/product-N.webp'

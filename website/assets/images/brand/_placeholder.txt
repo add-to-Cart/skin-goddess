@@ -1,0 +1,6 @@
+BRAND IMAGES
+------------
+Place brand/identity images here.
+
+og-cover.jpg       — 1200×630px JPEG — Used for social media sharing (Open Graph / Twitter Card)
+                     Update og:image meta tags in index.html once uploaded.

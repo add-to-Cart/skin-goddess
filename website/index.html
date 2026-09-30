@@ -3,40 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1a1a1a" />
+  <meta name="theme-color" content="#FFB0B6" />
 
   <!-- ============================================================
-       SEO — Replace with real business information
+       SEO — Update BUSINESS.domain in content.js to populate
   ============================================================ -->
-  <title>Skin Goddess Beauty Lounge — Skincare & Beauty Services</title>
-  <meta name="description" content="Skin Goddess Beauty Lounge offers professional skincare and beauty services. Book your appointment today and discover treatments tailored for your skin." />
-  <meta name="keywords" content="skin goddess, beauty lounge, skincare, facial, beauty services, skin treatment, beauty" />
-  <link rel="canonical" href="https://[YOUR-DOMAIN].com/" />
-
-  <!-- Open Graph — Social Sharing -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://[YOUR-DOMAIN].com/" />
-  <meta property="og:title" content="Skin Goddess Beauty Lounge" />
-  <meta property="og:description" content="Professional skincare and beauty services. Book your appointment through our online booking page." />
-  <meta property="og:image" content="https://[YOUR-DOMAIN].com/assets/images/og-cover.jpg" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="630" />
-  <meta property="og:locale" content="en_PH" />
+  <title>Skin Goddess Beauty Lounge — Aesthetic &amp; Beauty Services in General Trias, Cavite</title>
+  <meta name="description" content="Explore aesthetic and beauty treatments at Skin Goddess Beauty Lounge in General Trias, Cavite." />
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="Skin Goddess Beauty Lounge" />
+  <meta property="og:description" content="Skin Goddess Beauty Lounge in General Trias, Cavite. Explore our services and current offers." />
+  <meta property="og:locale"      content="en_PH" />
 
   <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Skin Goddess Beauty Lounge" />
-  <meta name="twitter:description" content="Professional skincare and beauty services. Book your appointment today." />
-  <meta name="twitter:image" content="https://[YOUR-DOMAIN].com/assets/images/og-cover.jpg" />
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:title"       content="Skin Goddess Beauty Lounge" />
+  <meta name="twitter:description" content="Explore aesthetic and beauty treatments at Skin Goddess Beauty Lounge in General Trias, Cavite." />
 
-  <!-- Favicon — Replace with real favicon -->
-  <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
-  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="assets/icons/app_icon.ico" />
 
-  <!-- Fonts — System stack, no external dependency -->
-  <!-- To use a web font, add a <link> here. Example (Google Fonts):
-       <link rel="preconnect" href="https://fonts.googleapis.com">
-       <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!--
+    FONTS (optional upgrade)
+    Remove the comment below to activate Cormorant + Inter.
+    Keep preconnect links for performance.
+  -->
+  <!--
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  -->
+  <!--
+    Then update in css/styles.css:
+      --font-body:    'Inter', system-ui, sans-serif;
+      --font-display: 'Cormorant', Georgia, serif;
   -->
 
   <link rel="stylesheet" href="css/styles.css" />
@@ -44,43 +45,42 @@
 
 <body>
 
-  <!-- ============================================================
-       SKIP NAVIGATION — Accessibility
-  ============================================================ -->
+  <!-- Skip navigation — accessibility -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- ============================================================
-       HEADER & NAVIGATION
+       HEADER
   ============================================================ -->
   <header class="site-header" role="banner">
     <div class="container header-inner">
 
-      <!-- Logo / Brand -->
       <a href="#" class="logo" aria-label="Skin Goddess Beauty Lounge — Go to homepage">
-        <span class="logo-mark" aria-hidden="true">✦</span>
+        <img
+          src="assets/images/brand/logo.png"
+          alt=""
+          class="logo-img"
+          width="48"
+          height="48"
+        />
         <span class="logo-text">
           <span class="logo-primary">Skin Goddess</span>
           <span class="logo-sub">Beauty Lounge</span>
         </span>
       </a>
 
-      <!-- Desktop Navigation -->
       <nav class="desktop-nav" aria-label="Main navigation">
         <ul role="list">
           <li><a href="#services">Services</a></li>
-          <li><a href="#products">Products</a></li>
-          <li><a href="#promos">Promos</a></li>
+          <li><a href="#promos-section">Promos</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
         </ul>
       </nav>
 
-      <!-- Header CTA -->
       <a href="#book" class="btn btn-primary header-book-btn" data-booking-link>
         Book Appointment
       </a>
 
-      <!-- Mobile Menu Toggle -->
       <button
         class="nav-toggle"
         id="nav-toggle"
@@ -89,28 +89,20 @@
         aria-label="Open navigation menu"
       >
         <span class="hamburger" aria-hidden="true">
-          <span></span>
-          <span></span>
-          <span></span>
+          <span></span><span></span><span></span>
         </span>
       </button>
 
     </div>
   </header>
 
-  <!-- Mobile Navigation Drawer -->
-  <nav
-    class="mobile-nav"
-    id="mobile-nav"
-    aria-label="Mobile navigation"
-    aria-hidden="true"
-  >
+  <!-- Mobile navigation drawer -->
+  <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
     <ul role="list">
       <li><a href="#services" class="mobile-nav-link">Services</a></li>
-      <li><a href="#products" class="mobile-nav-link">Products</a></li>
-      <li><a href="#promos" class="mobile-nav-link">Promos</a></li>
-      <li><a href="#about" class="mobile-nav-link">About</a></li>
-      <li><a href="#contact" class="mobile-nav-link">Contact</a></li>
+      <li><a href="#promos-section" class="mobile-nav-link">Promos</a></li>
+      <li><a href="#about"    class="mobile-nav-link">About</a></li>
+      <li><a href="#contact"  class="mobile-nav-link">Contact</a></li>
     </ul>
     <a href="#book" class="btn btn-primary mobile-nav-book" data-booking-link>
       Book Appointment
@@ -120,43 +112,42 @@
 
 
   <!-- ============================================================
-       MAIN CONTENT
+       MAIN
   ============================================================ -->
   <main id="main-content">
 
-    <!-- ==========================================================
-         SECTION 1 — FIRST IMPRESSION / HERO
-    ========================================================== -->
+
+    <!-- ========================================================
+         SECTION 1 — HERO
+         Two-column at 768px+: content left, image right.
+         On mobile: image strip above, content below.
+    ======================================================== -->
     <section class="section-hero" aria-labelledby="hero-heading">
 
+      <!--
+        HERO IMAGE
+        JS replaces this with <img> once HERO.image is set in content.js.
+        Replace placeholder with:
+          assets/images/hero/hero.webp
+          Recommended: 1440×900px, 16:9 or 3:2, WebP format.
+      -->
       <div class="hero-image-wrap" aria-hidden="true">
-        <!--
-          HERO IMAGE PLACEHOLDER
-          Replace with: High-quality photo of the lounge interior, a treatment in progress,
-          or a branded lifestyle photo.
-          Recommended size: 1440 × 800px minimum. Format: WebP or JPEG.
-        -->
         <div class="img-placeholder img-placeholder--hero">
-          <span>Hero Image<br>1440 × 800 — Interior / Treatment / Brand Photo</span>
+          <span>Hero Image · 1440 × 900<br>Lounge interior / treatment in progress / lifestyle photo</span>
         </div>
       </div>
 
       <div class="hero-content container">
         <div class="hero-label" aria-hidden="true">Beauty &amp; Skincare</div>
 
-        <h1 id="hero-heading" class="hero-heading">
-          <!-- REPLACE: Short positioning headline — what Skin Goddess actually is.
-               Example: "Your neighbourhood beauty lounge in [City]."
-               Do NOT use generic beauty slogans. -->
-          [YOUR POSITIONING HEADLINE]
-        </h1>
+        <!--
+          JS sets text from HERO.headline in content.js.
+          Fallback is the business name.
+        -->
+        <h1 id="hero-heading" class="hero-heading">Skin Goddess Beauty Lounge</h1>
 
-        <p class="hero-body">
-          <!-- REPLACE: One or two sentences. What the customer gets.
-               Example: "Professional skincare treatments and beauty services,
-               personalised for your skin." -->
-          [ONE OR TWO SENTENCES — WHAT YOU OFFER AND WHO IT'S FOR]
-        </p>
+        <!-- JS sets from HERO.subheadline -->
+        <p class="hero-body">Professional skincare and beauty services, personalised for your skin.</p>
 
         <div class="hero-actions">
           <a href="#book" class="btn btn-primary" data-booking-link>
@@ -167,206 +158,104 @@
           </a>
         </div>
 
-        <div class="hero-trust-bar" aria-label="Key details">
-          <!-- REPLACE: Fill in actual details -->
-          <span class="trust-item">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            Mon–Sat, [OPENING HOURS]
-          </span>
-          <span class="trust-divider" aria-hidden="true">·</span>
-          <span class="trust-item">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
-            [CITY / AREA]
-          </span>
-          <span class="trust-divider" aria-hidden="true">·</span>
-          <span class="trust-item">Online Booking Available</span>
+        <!-- JS renders trust bar items from HERO.trustItems -->
+        <div class="hero-trust-bar" id="hero-trust-bar" aria-label="Key business details">
+          <!-- Rendered by main.js -->
         </div>
       </div>
 
     </section>
 
 
-    <!-- ==========================================================
-         SECTION 2 — SERVICES
-    ========================================================== -->
+    <!-- ========================================================
+         SECTION 2 — WHAT'S NEW
+         A lightweight "business is active" strip.
+         Hidden automatically when UPDATES array is empty or all active:false.
+         JS renders from CONTENT.updates.
+    ======================================================== -->
+    <section class="section-updates" id="updates-section" aria-labelledby="updates-heading">
+      <div class="container">
+        <div class="updates-header">
+          <h2 id="updates-heading" class="updates-title">What's New</h2>
+          <span class="updates-rule" aria-hidden="true"></span>
+        </div>
+        <!-- JS renders update items here -->
+        <div class="updates-list" id="updates-list" role="list">
+          <!-- Rendered by main.js -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================
+         SECTION 3 — FEATURED SERVICES
+         A curated strip of services marked featured:true in content.js.
+         Uses an editorial layout — not a card grid.
+         Hidden automatically when no featured services exist.
+         JS renders from CONTENT.services (featured:true only).
+    ======================================================== -->
+    <section class="section-featured-services" id="featured-services-section" aria-labelledby="featured-services-heading">
+      <div class="container">
+        <header class="section-header">
+          <div class="section-eyebrow">Featured</div>
+          <h2 id="featured-services-heading" class="section-title">Featured Treatments</h2>
+          <p class="section-desc">Explore a few treatments from our current service menu.</p>
+        </header>
+        <!-- JS renders featured service cards here -->
+        <div class="featured-services-list" id="featured-services-list">
+          <!-- Rendered by main.js -->
+        </div>
+        <div class="featured-services-footer">
+          <a href="#services" class="btn btn-ghost">View All Services</a>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================
+         SECTION 4 — SERVICES
+         Full filterable grid of all visible services.
+         Filter categories come from CONTENT.filterCategories.
+         JS renders from CONTENT.services (visible:true).
+    ======================================================== -->
     <section class="section-services" id="services" aria-labelledby="services-heading">
       <div class="container">
 
         <header class="section-header">
           <h2 id="services-heading" class="section-title">Our Services</h2>
-          <p class="section-desc">
-            Browse our treatments and find what suits your skin and your schedule.
-          </p>
+          <p class="section-desc">Browse our full menu and find what suits your skin and your schedule.</p>
         </header>
 
-        <!-- Service Filter (optional — JS-powered) -->
-        <div class="service-filter" role="group" aria-label="Filter services by category">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="facial">Facials</button>
-          <button class="filter-btn" data-filter="body">Body</button>
-          <button class="filter-btn" data-filter="specialty">Specialty</button>
+        <!-- JS renders filter buttons here from CONTENT.filterCategories -->
+        <div class="service-filter" id="service-filter-bar" role="group" aria-label="Filter services by category">
+          <!-- Rendered by main.js -->
         </div>
 
+        <!-- JS renders service cards here from CONTENT.services -->
         <div class="services-grid" id="services-grid">
-
-          <!--
-            SERVICE CARD TEMPLATE
-            Duplicate this block for each service.
-            Replace placeholder text with real service information.
-          -->
-
-          <article class="service-card" data-category="facial" aria-labelledby="svc-1-name">
-            <div class="service-card-image">
-              <!--
-                SERVICE IMAGE PLACEHOLDER — 4:3 ratio
-                Recommended size: 800 × 600px. Format: WebP or JPEG.
-              -->
-              <div class="img-placeholder img-placeholder--service">
-                <span>Service Photo<br>4:3</span>
-              </div>
-            </div>
-            <div class="service-card-body">
-              <h3 id="svc-1-name" class="service-name">[SERVICE NAME 1]</h3>
-              <p class="service-desc">
-                [Short description of what this service does for the customer's skin. Two sentences max.]
-              </p>
-              <div class="service-meta">
-                <span class="service-price">₱[PRICE]</span>
-                <span class="service-duration">[XX] min</span>
-              </div>
-              <a href="#book" class="btn btn-outline btn-sm" data-booking-link aria-label="Book [SERVICE NAME 1]">
-                Book This Service
-              </a>
-            </div>
-          </article>
-
-          <article class="service-card" data-category="facial" aria-labelledby="svc-2-name">
-            <div class="service-card-image">
-              <div class="img-placeholder img-placeholder--service">
-                <span>Service Photo<br>4:3</span>
-              </div>
-            </div>
-            <div class="service-card-body">
-              <h3 id="svc-2-name" class="service-name">[SERVICE NAME 2]</h3>
-              <p class="service-desc">
-                [Short description of what this service does for the customer's skin. Two sentences max.]
-              </p>
-              <div class="service-meta">
-                <span class="service-price">₱[PRICE]</span>
-                <span class="service-duration">[XX] min</span>
-              </div>
-              <a href="#book" class="btn btn-outline btn-sm" data-booking-link aria-label="Book [SERVICE NAME 2]">
-                Book This Service
-              </a>
-            </div>
-          </article>
-
-          <article class="service-card" data-category="body" aria-labelledby="svc-3-name">
-            <div class="service-card-image">
-              <div class="img-placeholder img-placeholder--service">
-                <span>Service Photo<br>4:3</span>
-              </div>
-            </div>
-            <div class="service-card-body">
-              <h3 id="svc-3-name" class="service-name">[SERVICE NAME 3]</h3>
-              <p class="service-desc">
-                [Short description of what this service does for the customer's skin. Two sentences max.]
-              </p>
-              <div class="service-meta">
-                <span class="service-price">₱[PRICE]</span>
-                <span class="service-duration">[XX] min</span>
-              </div>
-              <a href="#book" class="btn btn-outline btn-sm" data-booking-link aria-label="Book [SERVICE NAME 3]">
-                Book This Service
-              </a>
-            </div>
-          </article>
-
-          <article class="service-card" data-category="specialty" aria-labelledby="svc-4-name">
-            <div class="service-card-image">
-              <div class="img-placeholder img-placeholder--service">
-                <span>Service Photo<br>4:3</span>
-              </div>
-            </div>
-            <div class="service-card-body">
-              <h3 id="svc-4-name" class="service-name">[SERVICE NAME 4]</h3>
-              <p class="service-desc">
-                [Short description of what this service does for the customer's skin. Two sentences max.]
-              </p>
-              <div class="service-meta">
-                <span class="service-price">₱[PRICE]</span>
-                <span class="service-duration">[XX] min</span>
-              </div>
-              <a href="#book" class="btn btn-outline btn-sm" data-booking-link aria-label="Book [SERVICE NAME 4]">
-                Book This Service
-              </a>
-            </div>
-          </article>
-
-          <article class="service-card" data-category="body" aria-labelledby="svc-5-name">
-            <div class="service-card-image">
-              <div class="img-placeholder img-placeholder--service">
-                <span>Service Photo<br>4:3</span>
-              </div>
-            </div>
-            <div class="service-card-body">
-              <h3 id="svc-5-name" class="service-name">[SERVICE NAME 5]</h3>
-              <p class="service-desc">
-                [Short description of what this service does for the customer's skin. Two sentences max.]
-              </p>
-              <div class="service-meta">
-                <span class="service-price">₱[PRICE]</span>
-                <span class="service-duration">[XX] min</span>
-              </div>
-              <a href="#book" class="btn btn-outline btn-sm" data-booking-link aria-label="Book [SERVICE NAME 5]">
-                Book This Service
-              </a>
-            </div>
-          </article>
-
-          <article class="service-card" data-category="specialty" aria-labelledby="svc-6-name">
-            <div class="service-card-image">
-              <div class="img-placeholder img-placeholder--service">
-                <span>Service Photo<br>4:3</span>
-              </div>
-            </div>
-            <div class="service-card-body">
-              <h3 id="svc-6-name" class="service-name">[SERVICE NAME 6]</h3>
-              <p class="service-desc">
-                [Short description of what this service does for the customer's skin. Two sentences max.]
-              </p>
-              <div class="service-meta">
-                <span class="service-price">₱[PRICE]</span>
-                <span class="service-duration">[XX] min</span>
-              </div>
-              <a href="#book" class="btn btn-outline btn-sm" data-booking-link aria-label="Book [SERVICE NAME 6]">
-                Book This Service
-              </a>
-            </div>
-          </article>
-
-        </div><!-- /services-grid -->
+          <!-- Rendered by main.js -->
+        </div>
 
       </div>
     </section>
 
 
-    <!-- ==========================================================
-         SECTION 3 — HELP ME CHOOSE
-    ========================================================== -->
+    <!-- ========================================================
+         SECTION 5 — HELP ME CHOOSE
+         Static UX guide — no data dependency.
+         Helps undecided visitors navigate to the right service.
+    ======================================================== -->
     <section class="section-chooser" id="help-choose" aria-labelledby="chooser-heading">
       <div class="container">
 
         <header class="section-header section-header--centered">
           <h2 id="chooser-heading" class="section-title">Not sure what to book?</h2>
-          <p class="section-desc">
-            Tell us what you're looking for and we'll point you to the right service.
-          </p>
+          <p class="section-desc">Tell us what you're looking for and we'll point you in the right direction.</p>
         </header>
 
         <div class="chooser-grid" role="list">
 
-          <a href="#services" class="chooser-card" role="listitem" aria-label="Browse services for relaxation and basic care">
+          <a href="#services" class="chooser-card" role="listitem" aria-label="Browse relaxation and basic care services">
             <div class="chooser-icon" aria-hidden="true">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M14 4c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10S19.523 4 14 4z" stroke="currentColor" stroke-width="1.5"/><path d="M9 15c.833 1.667 2.5 3 5 3s4.167-1.333 5-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="12" r="1" fill="currentColor"/><circle cx="17" cy="12" r="1" fill="currentColor"/></svg>
             </div>
@@ -374,7 +263,7 @@
             <span class="chooser-hint">Unwind and refresh</span>
           </a>
 
-          <a href="#services" class="chooser-card" role="listitem" aria-label="Browse services for skin concerns">
+          <a href="#services" class="chooser-card" role="listitem" aria-label="Browse services for specific skin concerns">
             <div class="chooser-icon" aria-hidden="true">
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M14 6c0 0-7 5-7 11a7 7 0 0014 0c0-6-7-11-7-11z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
             </div>
@@ -390,9 +279,9 @@
             <span class="chooser-hint">Targeted professional care</span>
           </a>
 
-          <a href="#contact" class="chooser-card" role="listitem" aria-label="Contact us for a recommendation">
+          <a href="#contact" class="chooser-card" role="listitem" aria-label="Contact us for a personalised recommendation">
             <div class="chooser-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><circle cx="14" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M14 6v2M14 16v2M8 12H6M22 12h-2M9.515 7.515l1.414 1.414M17.071 17.071l1.414 1.414M9.515 16.485l1.414-1.414M17.071 8.929l1.414-1.414" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><path d="M4 7h20M4 14h14M4 21h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             </div>
             <span class="chooser-label">I'm Not Sure</span>
             <span class="chooser-hint">Ask us — we'll help</span>
@@ -404,257 +293,85 @@
     </section>
 
 
-    <!-- ==========================================================
-         SECTION 4 — FEATURED PROMOTION
-    ========================================================== -->
-    <section class="section-promo" id="promos" aria-labelledby="promo-heading">
+    <!-- ========================================================
+         SECTION 6 — FEATURED PROMOTION
+         Dark background section. Shown only when an active+featured
+         promotion exists in CONTENT.promotions. Hidden automatically otherwise.
+         JS renders from CONTENT.promotions.
+    ======================================================== -->
+    <section class="section-promo" id="promos-section" aria-labelledby="promo-heading">
+      <div class="container">
+        <!-- JS renders the promo card here -->
+        <div class="promo-card" id="promo-card">
+          <!-- Rendered by main.js -->
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ========================================================
+         SECTION 7 — PRODUCTS
+         Hidden automatically when all products are unavailable.
+         JS renders from CONTENT.products (available:true).
+         Products use inquiry model — links to contact, not booking.
+    ======================================================== -->
+    <section class="section-products" id="products-section" aria-labelledby="products-heading">
       <div class="container">
 
-        <div class="promo-card">
+        <header class="section-header">
+          <h2 id="products" class="section-title">Products</h2>
+          <p class="section-desc">Skincare and beauty products available in-lounge and for take-home use.</p>
+        </header>
 
-          <div class="promo-image-col">
-            <!--
-              PROMO IMAGE PLACEHOLDER — 4:3 or 1:1 ratio
-              Replace with actual promo photo or graphic.
-            -->
-            <div class="img-placeholder img-placeholder--promo">
-              <span>Promo Image<br>4:3</span>
-            </div>
-          </div>
+        <!-- JS renders product cards here -->
+        <div class="products-grid" id="products-grid">
+          <!-- Rendered by main.js -->
+        </div>
 
-          <div class="promo-content-col">
-            <div class="promo-eyebrow">Limited Offer</div>
-            <h2 id="promo-heading" class="promo-title">[PROMO NAME]</h2>
-            <p class="promo-desc">
-              [Short description of what is included in this promotion. Keep it specific and honest.]
-            </p>
-            <div class="promo-pricing">
-              <span class="promo-price">₱[PROMO PRICE]</span>
-              <span class="promo-regular">Regular ₱[REGULAR PRICE]</span>
-            </div>
-            <p class="promo-validity">
-              <!-- REPLACE: actual validity date -->
-              Valid until <time datetime="[YYYY-MM-DD]">[DATE]</time>
-            </p>
-            <a href="#book" class="btn btn-primary" data-booking-link>
-              Book This Promo
-            </a>
-            <p class="promo-note">
-              <!-- REPLACE: any conditions, e.g. "By appointment only. Cannot be combined with other offers." -->
-              [CONDITIONS / NOTES — e.g. By appointment only.]
-            </p>
-          </div>
-
+        <div class="products-footer">
+          <p class="products-note">
+            Interested in a product? <a href="#contact">Contact us</a> to inquire about availability or to place an order.
+          </p>
         </div>
 
       </div>
     </section>
 
 
-    <!-- ==========================================================
-         SECTION 5 — PRODUCTS
-    ========================================================== -->
-    <section class="section-products" id="products" aria-labelledby="products-heading">
-      <div class="container">
-
-        <header class="section-header">
-          <h2 id="products-heading" class="section-title">Products</h2>
-          <p class="section-desc">
-            Skincare and beauty products available in-lounge and for take-home use.
-          </p>
-        </header>
-
-        <div class="products-grid">
-
-          <!--
-            PRODUCT CARD TEMPLATE
-            Duplicate this block for each product.
-          -->
-
-          <article class="product-card" aria-labelledby="prod-1-name">
-            <div class="product-card-image">
-              <!--
-                PRODUCT IMAGE PLACEHOLDER — 1:1 ratio
-                Recommended size: 600 × 600px. Format: WebP or JPEG.
-              -->
-              <div class="img-placeholder img-placeholder--product">
-                <span>Product Photo<br>1:1</span>
-              </div>
-            </div>
-            <div class="product-card-body">
-              <h3 id="prod-1-name" class="product-name">[PRODUCT NAME 1]</h3>
-              <p class="product-desc">[Short description. One sentence about what this product does.]</p>
-              <div class="product-footer">
-                <span class="product-price">₱[PRICE]</span>
-                <a href="#contact" class="btn btn-outline btn-sm" aria-label="Inquire about [PRODUCT NAME 1]">
-                  Inquire
-                </a>
-              </div>
-            </div>
-          </article>
-
-          <article class="product-card" aria-labelledby="prod-2-name">
-            <div class="product-card-image">
-              <div class="img-placeholder img-placeholder--product">
-                <span>Product Photo<br>1:1</span>
-              </div>
-            </div>
-            <div class="product-card-body">
-              <h3 id="prod-2-name" class="product-name">[PRODUCT NAME 2]</h3>
-              <p class="product-desc">[Short description. One sentence about what this product does.]</p>
-              <div class="product-footer">
-                <span class="product-price">₱[PRICE]</span>
-                <a href="#contact" class="btn btn-outline btn-sm" aria-label="Inquire about [PRODUCT NAME 2]">
-                  Inquire
-                </a>
-              </div>
-            </div>
-          </article>
-
-          <article class="product-card" aria-labelledby="prod-3-name">
-            <div class="product-card-image">
-              <div class="img-placeholder img-placeholder--product">
-                <span>Product Photo<br>1:1</span>
-              </div>
-            </div>
-            <div class="product-card-body">
-              <h3 id="prod-3-name" class="product-name">[PRODUCT NAME 3]</h3>
-              <p class="product-desc">[Short description. One sentence about what this product does.]</p>
-              <div class="product-footer">
-                <span class="product-price">₱[PRICE]</span>
-                <a href="#contact" class="btn btn-outline btn-sm" aria-label="Inquire about [PRODUCT NAME 3]">
-                  Inquire
-                </a>
-              </div>
-            </div>
-          </article>
-
-          <article class="product-card" aria-labelledby="prod-4-name">
-            <div class="product-card-image">
-              <div class="img-placeholder img-placeholder--product">
-                <span>Product Photo<br>1:1</span>
-              </div>
-            </div>
-            <div class="product-card-body">
-              <h3 id="prod-4-name" class="product-name">[PRODUCT NAME 4]</h3>
-              <p class="product-desc">[Short description. One sentence about what this product does.]</p>
-              <div class="product-footer">
-                <span class="product-price">₱[PRICE]</span>
-                <a href="#contact" class="btn btn-outline btn-sm" aria-label="Inquire about [PRODUCT NAME 4]">
-                  Inquire
-                </a>
-              </div>
-            </div>
-          </article>
-
-        </div><!-- /products-grid -->
-
-      </div>
-    </section>
-
-
-    <!-- ==========================================================
-         SECTION 6 — TRUST / TESTIMONIALS
-    ========================================================== -->
+    <!-- ========================================================
+         SECTION 8 — TESTIMONIALS
+         Shows real client quotes when added to CONTENT.testimonials.
+         Graceful empty state when array is empty.
+         JS renders from CONTENT.testimonials.
+    ======================================================== -->
     <section class="section-trust" id="testimonials" aria-labelledby="trust-heading">
       <div class="container">
 
         <header class="section-header section-header--centered">
           <h2 id="trust-heading" class="section-title">What Our Clients Say</h2>
-          <p class="section-desc">
-            Real experiences from real clients.
-          </p>
+          <p class="section-desc">Real experiences from real clients.</p>
         </header>
 
-        <div class="testimonials-grid">
+        <!-- JS renders testimonial cards or empty state here -->
+        <div class="testimonials-grid" id="testimonials-grid">
+          <!-- Rendered by main.js -->
+        </div>
 
-          <!--
-            TESTIMONIAL PLACEHOLDER
-            Replace with real customer feedback.
-            Never fabricate testimonials.
-          -->
-
-          <blockquote class="testimonial-card" aria-labelledby="testi-1-author">
-            <div class="testimonial-stars" aria-label="5 out of 5 stars" role="img">
-              <span aria-hidden="true">★★★★★</span>
-            </div>
-            <p class="testimonial-text">
-              "[Customer testimonial will be placed here. Ask real clients for a short sentence or two about their experience.]"
-            </p>
-            <footer class="testimonial-footer">
-              <div class="testimonial-avatar" aria-hidden="true">
-                <!--
-                  OPTIONAL: Replace with real customer photo (with consent).
-                  Image should be 80×80px, circular crop.
-                -->
-                <div class="img-placeholder img-placeholder--avatar">
-                  <span>Photo</span>
-                </div>
-              </div>
-              <cite id="testi-1-author" class="testimonial-author">
-                <span class="author-name">[Client Name]</span>
-                <span class="author-service">[Service received]</span>
-              </cite>
-            </footer>
-          </blockquote>
-
-          <blockquote class="testimonial-card" aria-labelledby="testi-2-author">
-            <div class="testimonial-stars" aria-label="5 out of 5 stars" role="img">
-              <span aria-hidden="true">★★★★★</span>
-            </div>
-            <p class="testimonial-text">
-              "[Customer testimonial will be placed here. Ask real clients for a short sentence or two about their experience.]"
-            </p>
-            <footer class="testimonial-footer">
-              <div class="testimonial-avatar" aria-hidden="true">
-                <div class="img-placeholder img-placeholder--avatar">
-                  <span>Photo</span>
-                </div>
-              </div>
-              <cite id="testi-2-author" class="testimonial-author">
-                <span class="author-name">[Client Name]</span>
-                <span class="author-service">[Service received]</span>
-              </cite>
-            </footer>
-          </blockquote>
-
-          <blockquote class="testimonial-card" aria-labelledby="testi-3-author">
-            <div class="testimonial-stars" aria-label="5 out of 5 stars" role="img">
-              <span aria-hidden="true">★★★★★</span>
-            </div>
-            <p class="testimonial-text">
-              "[Customer testimonial will be placed here. Ask real clients for a short sentence or two about their experience.]"
-            </p>
-            <footer class="testimonial-footer">
-              <div class="testimonial-avatar" aria-hidden="true">
-                <div class="img-placeholder img-placeholder--avatar">
-                  <span>Photo</span>
-                </div>
-              </div>
-              <cite id="testi-3-author" class="testimonial-author">
-                <span class="author-name">[Client Name]</span>
-                <span class="author-service">[Service received]</span>
-              </cite>
-            </footer>
-          </blockquote>
-
-        </div><!-- /testimonials-grid -->
-
-        <!-- Optional: Before & After or Social Proof Banner -->
-        <div class="social-proof-bar">
+        <!-- Social proof bar — hidden by JS if Instagram not configured -->
+        <div class="social-proof-bar" id="social-proof-bar">
           <span>
-            <!-- REPLACE: Add real social links once available -->
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
             Follow us on Instagram for results and updates
           </span>
           <a
-            href="[INSTAGRAM_URL]"
+            id="instagram-follow-btn"
+            href="#"
             target="_blank"
             rel="noopener noreferrer"
             class="btn btn-ghost btn-sm"
             aria-label="Follow Skin Goddess on Instagram (opens in new tab)"
           >
-            @[INSTAGRAM HANDLE]
+            @skingoddess
           </a>
         </div>
 
@@ -662,22 +379,27 @@
     </section>
 
 
-    <!-- ==========================================================
-         SECTION 7 — ABOUT
-    ========================================================== -->
+    <!-- ========================================================
+         SECTION 9 — ABOUT
+         Editorial layout: image beside text at 768px+.
+         JS renders from CONTENT.about.
+    ======================================================== -->
     <section class="section-about" id="about" aria-labelledby="about-heading">
       <div class="container">
 
         <div class="about-layout">
 
+          <!--
+            ABOUT IMAGE
+            JS replaces this with <img> when ABOUT.image is set in content.js.
+            Recommended: 800×1000px portrait, or 800×600px landscape. WebP.
+            Place at: assets/images/about/about.webp
+          -->
           <div class="about-image-col">
-            <!--
-              ABOUT IMAGE PLACEHOLDER — 4:3 or portrait ratio
-              Use a photo of the lounge, the team, or the owner.
-              Recommended size: 800 × 1000px for portrait.
-            -->
-            <div class="img-placeholder img-placeholder--about">
-              <span>About Photo<br>4:3 or Portrait<br>Team / Owner / Lounge Interior</span>
+            <div id="about-image-wrap" class="about-image-wrap">
+              <div class="img-placeholder img-placeholder--about">
+                <span>About Photo · 4:3 or Portrait<br>Owner / Team / Lounge Interior</span>
+              </div>
             </div>
           </div>
 
@@ -685,41 +407,19 @@
             <div class="section-eyebrow">About Us</div>
             <h2 id="about-heading" class="section-title">About Skin Goddess</h2>
 
-            <p class="about-body">
-              <!--
-                REPLACE: Write a short, honest description of the business.
-                Who started it? What is the mission? What makes this lounge worth visiting?
-                Keep it real — 2 to 4 sentences is enough.
-              -->
-              [SHORT AUTHENTIC DESCRIPTION — who you are, what you do, why it matters to your clients.]
+            <!-- JS sets from ABOUT.intro -->
+            <p id="about-intro" class="about-body">
+              [Short authentic description — who you are, what you do, why it matters to your clients.]
             </p>
 
-            <p class="about-body">
-              <!--
-                REPLACE: Optional second paragraph — more detail about the approach,
-                the team, or the experience clients can expect.
-              -->
-              [OPTIONAL SECOND PARAGRAPH — your approach, your team, or what makes a visit to Skin Goddess different.]
+            <!-- JS sets from ABOUT.body — hidden if empty -->
+            <p id="about-body" class="about-body" hidden>
+              [Optional second paragraph.]
             </p>
 
-            <!-- Optional credentials / certifications -->
-            <div class="about-credentials">
-              <!--
-                REPLACE: Add real credentials, training, or certifications.
-                Do NOT invent these.
-              -->
-              <div class="credential-item">
-                <span class="credential-icon" aria-hidden="true">✓</span>
-                [CREDENTIAL OR CERTIFICATION PLACEHOLDER]
-              </div>
-              <div class="credential-item">
-                <span class="credential-icon" aria-hidden="true">✓</span>
-                [CREDENTIAL OR CERTIFICATION PLACEHOLDER]
-              </div>
-              <div class="credential-item">
-                <span class="credential-icon" aria-hidden="true">✓</span>
-                [CREDENTIAL OR CERTIFICATION PLACEHOLDER]
-              </div>
+            <!-- JS renders from ABOUT.credentials — hidden if empty -->
+            <div id="about-credentials" class="about-credentials" hidden>
+              <!-- Rendered by main.js -->
             </div>
 
           </div>
@@ -730,9 +430,11 @@
     </section>
 
 
-    <!-- ==========================================================
-         SECTION 8 — LOCATION & CONTACT
-    ========================================================== -->
+    <!-- ========================================================
+         SECTION 10 — LOCATION & CONTACT
+         JS populates all contact details from BUSINESS config.
+         Map embed replaced by JS when BUSINESS.mapEmbed is set.
+    ======================================================== -->
     <section class="section-contact" id="contact" aria-labelledby="contact-heading">
       <div class="container">
 
@@ -745,18 +447,17 @@
 
           <div class="contact-info-col">
 
+            <!-- Location -->
             <div class="contact-group">
               <h3 class="contact-group-label">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.5C5.515 1.5 3.5 3.515 3.5 6c0 3.75 4.5 8.5 4.5 8.5s4.5-4.75 4.5-8.5c0-2.485-2.015-4.5-4.5-4.5z" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="6" r="1.5" stroke="currentColor" stroke-width="1.5"/></svg>
                 Location
               </h3>
-              <address class="contact-address">
-                <!-- REPLACE: Full address -->
-                [STREET ADDRESS]<br />
-                [CITY, PROVINCE / ZIP]
-              </address>
+              <!-- JS sets from BUSINESS.address -->
+              <address id="contact-address" class="contact-address">[STREET ADDRESS]<br>[CITY, PROVINCE]</address>
               <a
-                href="https://maps.google.com/?q=[YOUR+ADDRESS+URL+ENCODED]"
+                href="#"
+                data-map-link
                 target="_blank"
                 rel="noopener noreferrer"
                 class="contact-map-link"
@@ -766,59 +467,58 @@
               </a>
             </div>
 
-            <div class="contact-group">
+            <!-- Opening Hours -->
+            <div class="contact-group" id="contact-hours-group">
               <h3 class="contact-group-label">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4l2.5 1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 Opening Hours
               </h3>
-              <dl class="hours-list">
-                <!-- REPLACE: Actual operating hours -->
-                <div class="hours-row">
-                  <dt>Monday – Friday</dt>
-                  <dd>[TIME] – [TIME]</dd>
-                </div>
-                <div class="hours-row">
-                  <dt>Saturday</dt>
-                  <dd>[TIME] – [TIME]</dd>
-                </div>
-                <div class="hours-row">
-                  <dt>Sunday</dt>
-                  <dd>[CLOSED / HOURS]</dd>
-                </div>
+              <!-- JS renders rows from BUSINESS.hours -->
+              <dl class="hours-list" id="hours-list">
+                <div class="hours-row"><dt>Monday – Friday</dt><dd>[TIME] – [TIME]</dd></div>
+                <div class="hours-row"><dt>Saturday</dt><dd>[TIME] – [TIME]</dd></div>
+                <div class="hours-row"><dt>Sunday</dt><dd>[CLOSED / HOURS]</dd></div>
               </dl>
             </div>
 
-            <div class="contact-group">
+            <!-- Contact details -->
+            <div class="contact-group" id="contact-links-group">
               <h3 class="contact-group-label">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 3.5A1.5 1.5 0 013.5 2h.5c.828 0 1.5.672 1.5 1.5v1c0 .552-.224 1.052-.586 1.414L4 7c.736 1.47 2.53 3.264 4 4l1.086-.914A2 2 0 0110.5 9.5h1A1.5 1.5 0 0113 11v.5A1.5 1.5 0 0111.5 13C6.253 13 2 8.747 2 3.5z" stroke="currentColor" stroke-width="1.5"/></svg>
                 Contact
               </h3>
               <ul class="contact-links" role="list">
                 <li>
-                  <a href="tel:[PHONE_NUMBER]" aria-label="Call Skin Goddess Beauty Lounge">
+                  <!-- JS sets href and text from BUSINESS.phone -->
+                  <a id="contact-phone" href="tel:[PHONE]" aria-label="Call Skin Goddess Beauty Lounge">
                     [PHONE NUMBER]
                   </a>
                 </li>
                 <li>
-                  <a href="[FACEBOOK_URL]" target="_blank" rel="noopener noreferrer" aria-label="Visit Skin Goddess on Facebook (opens in new tab)">
-                    Facebook — [FACEBOOK PAGE NAME]
+                  <!-- JS sets href from BUSINESS.facebook -->
+                  <a id="contact-facebook" href="#" target="_blank" rel="noopener noreferrer"
+                     aria-label="Visit Skin Goddess on Facebook (opens in new tab)">
+                    Facebook
                   </a>
                 </li>
                 <li>
-                  <a href="[INSTAGRAM_URL]" target="_blank" rel="noopener noreferrer" aria-label="Visit Skin Goddess on Instagram (opens in new tab)">
-                    Instagram — @[INSTAGRAM HANDLE]
+                  <!-- JS sets href and text from BUSINESS.instagram -->
+                  <a id="contact-instagram" href="#" target="_blank" rel="noopener noreferrer"
+                     aria-label="Visit Skin Goddess on Instagram (opens in new tab)">
+                    Instagram
                   </a>
                 </li>
               </ul>
             </div>
 
-            <div class="contact-group">
+            <!-- Booking CTA within contact -->
+            <div class="contact-group" id="contact-booking-group">
               <h3 class="contact-group-label">
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="2" y="4" width="12" height="9" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M2 7h12M5 2v2M11 2v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 Book an Appointment
               </h3>
               <p class="contact-booking-note">
-                Appointments are managed through our online booking page. Choose your service, pick a time that works for you, and confirm in a few taps.
+                Appointments are booked through our online booking page. Choose your service, pick a time, and confirm in a few taps.
               </p>
               <a href="#book" class="btn btn-primary" data-booking-link>
                 Book Online
@@ -827,28 +527,29 @@
 
           </div><!-- /contact-info-col -->
 
+          <!-- Map -->
           <div class="contact-map-col">
             <!--
-              MAP PLACEHOLDER
-              Replace this div with an embedded Google Maps iframe.
-              Example:
-              <iframe
-                src="https://www.google.com/maps/embed?pb=..."
-                width="100%" height="400"
-                style="border:0;" allowfullscreen="" loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-                title="Skin Goddess Beauty Lounge on Google Maps"
-              ></iframe>
+              JS replaces this with a Google Maps iframe when
+              BUSINESS.mapEmbed is set in content.js.
+              To get the embed src:
+                1. Open Google Maps → find your location
+                2. Click Share → Embed a map
+                3. Copy only the src="..." value from the iframe code
+                4. Paste it into BUSINESS.mapEmbed in content.js
             -->
-            <div class="map-placeholder" role="img" aria-label="Map placeholder — replace with embedded Google Maps">
+            <div id="map-embed-wrap" class="map-placeholder"
+                 role="img"
+                 aria-label="Location — Skin Goddess Lancaster Branch">
               <svg width="36" height="36" viewBox="0 0 36 36" fill="none" aria-hidden="true"><path d="M18 4C12.477 4 8 8.477 8 14c0 8.5 10 18 10 18s10-9.5 10-18c0-5.523-4.477-10-10-10z" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="14" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
-              <span>Map — Replace with Google Maps embed</span>
+              <span>Lancaster Branch · General Trias, Cavite</span>
               <a
-                href="https://maps.google.com/?q=[YOUR+ADDRESS+URL+ENCODED]"
+                href="#"
+                data-map-link
                 target="_blank"
                 rel="noopener noreferrer"
                 class="btn btn-ghost btn-sm"
-                aria-label="Open in Google Maps (opens in new tab)"
+                aria-label="Open location in Google Maps (opens in new tab)"
               >
                 Open in Google Maps
               </a>
@@ -861,9 +562,10 @@
     </section>
 
 
-    <!-- ==========================================================
-         SECTION 9 — FINAL BOOKING CTA
-    ========================================================== -->
+    <!-- ========================================================
+         SECTION 11 — BOOKING CTA
+         Final booking invitation. Booking URL configured in content.js.
+    ======================================================== -->
     <section class="section-booking-cta" id="book" aria-labelledby="cta-heading">
       <div class="container">
 
@@ -871,12 +573,10 @@
           <h2 id="cta-heading" class="cta-heading">Ready to Book?</h2>
           <p class="cta-body">
             Choose your service and schedule through our online booking page.
-            Pick a time that works for you — it takes less than a minute.
+            It takes less than a minute.
           </p>
           <a
-            href="[SETMORE_BOOKING_URL]"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#"
             class="btn btn-primary btn-lg"
             data-booking-link
             aria-label="Book an appointment at Skin Goddess Beauty Lounge (opens booking page)"
@@ -885,93 +585,18 @@
           </a>
           <p class="cta-note">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 7v4M8 5.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-            Bookings are handled through Setmore. You'll receive a confirmation once your appointment is scheduled.
+            You'll receive a confirmation once your appointment is scheduled.
           </p>
         </div>
 
-        <!-- FAQ — Common booking questions -->
-        <div class="faq-section" aria-labelledby="faq-heading">
+        <!-- FAQ -->
+        <div class="faq-section" id="faq-section" aria-labelledby="faq-heading">
           <h3 id="faq-heading" class="faq-title">Common Questions</h3>
-          <dl class="faq-list">
-
-            <div class="faq-item">
-              <dt>
-                <button
-                  class="faq-question"
-                  aria-expanded="false"
-                  aria-controls="faq-1-answer"
-                >
-                  What happens after I book?
-                  <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-              </dt>
-              <dd id="faq-1-answer" class="faq-answer" hidden>
-                <p>
-                  <!-- REPLACE: Describe the actual post-booking process. -->
-                  [Describe what happens after booking — confirmation email, reminders, what to bring, arrival instructions, etc.]
-                </p>
-              </dd>
-            </div>
-
-            <div class="faq-item">
-              <dt>
-                <button
-                  class="faq-question"
-                  aria-expanded="false"
-                  aria-controls="faq-2-answer"
-                >
-                  Do I need to prepare anything before my visit?
-                  <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-              </dt>
-              <dd id="faq-2-answer" class="faq-answer" hidden>
-                <p>
-                  <!-- REPLACE: Arrival/preparation instructions. -->
-                  [Any preparation instructions — arrive without makeup, inform us about skin conditions, etc.]
-                </p>
-              </dd>
-            </div>
-
-            <div class="faq-item">
-              <dt>
-                <button
-                  class="faq-question"
-                  aria-expanded="false"
-                  aria-controls="faq-3-answer"
-                >
-                  Can I reschedule or cancel?
-                  <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-              </dt>
-              <dd id="faq-3-answer" class="faq-answer" hidden>
-                <p>
-                  <!-- REPLACE: Actual cancellation/rescheduling policy. -->
-                  [Your rescheduling and cancellation policy — e.g. how many hours notice is needed, whether there's a fee, how to contact you.]
-                </p>
-              </dd>
-            </div>
-
-            <div class="faq-item">
-              <dt>
-                <button
-                  class="faq-question"
-                  aria-expanded="false"
-                  aria-controls="faq-4-answer"
-                >
-                  What payment methods do you accept?
-                  <svg class="faq-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-              </dt>
-              <dd id="faq-4-answer" class="faq-answer" hidden>
-                <p>
-                  <!-- REPLACE: Actual payment methods. -->
-                  [Cash, GCash, bank transfer, credit/debit card — list what you actually accept.]
-                </p>
-              </dd>
-            </div>
-
+          <!-- JS renders FAQ items from CONTENT.faq -->
+          <dl class="faq-list" id="faq-list">
+            <!-- Rendered by main.js -->
           </dl>
-        </div><!-- /faq-section -->
+        </div>
 
       </div>
     </section>
@@ -988,23 +613,27 @@
 
       <div class="footer-brand">
         <a href="#" class="logo footer-logo" aria-label="Skin Goddess Beauty Lounge — Back to top">
-          <span class="logo-mark" aria-hidden="true">✦</span>
+          <img
+            src="assets/images/brand/logo.jpg"
+            alt=""
+            class="logo-img logo-img--footer"
+            width="44"
+            height="44"
+          />
           <span class="logo-text">
             <span class="logo-primary">Skin Goddess</span>
             <span class="logo-sub">Beauty Lounge</span>
           </span>
         </a>
-        <p class="footer-tagline">
-          <!-- REPLACE: Short positioning statement. -->
-          [YOUR TAGLINE OR SHORT DESCRIPTION]
-        </p>
+        <!-- JS sets from BUSINESS.tagline -->
+        <p class="footer-tagline">[YOUR TAGLINE]</p>
       </div>
 
       <nav class="footer-nav" aria-label="Footer navigation">
         <ul role="list">
           <li><a href="#services">Services</a></li>
           <li><a href="#products">Products</a></li>
-          <li><a href="#promos">Promos</a></li>
+          <li><a href="#promos-section">Promos</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#contact">Contact</a></li>
           <li><a href="#book" data-booking-link>Book Appointment</a></li>
@@ -1012,24 +641,28 @@
       </nav>
 
       <div class="footer-social">
+        <!-- JS sets href from BUSINESS.facebook -->
         <a
-          href="[FACEBOOK_URL]"
+          id="footer-facebook"
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Skin Goddess on Facebook (opens in new tab)"
           class="social-link"
+          aria-label="Skin Goddess on Facebook (opens in new tab)"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Facebook
         </a>
+        <!-- JS sets href from BUSINESS.instagram -->
         <a
-          href="[INSTAGRAM_URL]"
+          id="footer-instagram"
+          href="#"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Skin Goddess on Instagram (opens in new tab)"
           class="social-link"
+          aria-label="Skin Goddess on Instagram (opens in new tab)"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
           Instagram
         </a>
       </div>
@@ -1041,27 +674,27 @@
         <p class="footer-copy">
           &copy; <span id="footer-year"></span> Skin Goddess Beauty Lounge. All rights reserved.
         </p>
-        <p class="footer-credits">
-          <!-- Remove or keep this line as you prefer -->
-          Website by [YOUR WEB DESIGNER / DEVELOPER]
-        </p>
+
       </div>
     </div>
 
   </footer>
 
 
-  <!-- ============================================================
-       MOBILE STICKY BOOKING BAR
-       Appears only on mobile when hero CTA scrolls out of view.
-  ============================================================ -->
+  <!-- Mobile sticky booking bar — shown by JS after hero scrolls away -->
   <div class="mobile-sticky-bar" id="mobile-sticky-bar" aria-hidden="true">
-    <a href="#book" class="btn btn-primary btn-full" data-booking-link tabindex="-1">
+    <a href="#" class="btn btn-primary btn-full" data-booking-link tabindex="-1">
       Book an Appointment
     </a>
   </div>
 
 
+  <!--
+    SCRIPTS
+    content.js must load before main.js — it defines CONTENT.
+  -->
+  <script src="js/content.js"></script>
   <script src="js/main.js"></script>
+
 </body>
 </html>

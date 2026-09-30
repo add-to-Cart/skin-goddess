@@ -1,0 +1,5 @@
+HERO IMAGE
+----------
+hero.webp   — 1440×900px minimum, WebP format preferred (JPEG acceptable)
+              Subject: lounge interior, treatment in progress, or lifestyle brand photo.
+              Set path in content.js → HERO.image = 'assets/images/hero/hero.webp'
