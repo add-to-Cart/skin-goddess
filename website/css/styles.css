@@ -40,28 +40,36 @@
 
 :root {
   /* --- Colour Palette ---
-     Warm neutral base. Dusty rose accent. Dark charcoal text.
-     Feminine without being sweet. Professional without being cold.
+     Brand: #FFB0B6 (Skin Goddess blush pink)
+     Strategy:
+       - #FFB0B6 used as a decorative brand color (borders, tags, tints)
+       - #C2404A (deep rose) used for interactive elements — buttons, links
+         (ensures WCAG AA contrast on light backgrounds)
+       - Warm cream backgrounds keep the page soft without being stark white
+       - Deep plum-brown footer anchors the page without feeling harsh
   */
-  --color-bg:           #FAF8F5;   /* Warm off-white page background     */
-  --color-bg-alt:       #F3EFE9;   /* Slightly deeper warm tone           */
-  --color-bg-dark:      #1C1916;   /* Near-black for footer / dark areas  */
+  --color-brand:        #FFB0B6;   /* Brand blush — decorative use only   */
+
+  --color-bg:           #FDF8F8;   /* Warm blush-cream page background    */
+  --color-bg-alt:       #F5EDEE;   /* Soft blush-grey alternate bg        */
+  --color-bg-dark:      #2A1A1C;   /* Deep plum-brown footer / dark areas */
   --color-surface:      #FFFFFF;   /* Card / panel surfaces               */
-  --color-surface-warm: #FBF6F1;   /* Warm panel variant                  */
+  --color-surface-warm: #FFF0F1;   /* Blush mist panel variant            */
 
-  --color-accent:       #C2866A;   /* Primary accent — warm terracotta/rose */
-  --color-accent-hover: #A96D53;   /* Hover state for accent              */
-  --color-accent-light: #F0DDD3;   /* Very light tint — backgrounds, highlights */
+  --color-accent:       #C2404A;   /* Primary accent — deep rose          */
+  --color-accent-hover: #A83039;   /* Hover state — darker rose           */
+  --color-accent-light: #FFF0F1;   /* Very light blush tint — backgrounds */
+  --color-accent-brand: #FFB0B6;   /* Brand pink — use for decorative highlights */
 
-  --color-text:         #1C1916;   /* Body text — near-black warm         */
-  --color-text-mid:     #5A4E46;   /* Secondary text                      */
-  --color-text-muted:   #8C7B72;   /* Placeholder labels, captions        */
-  --color-text-inverse: #FAF8F5;   /* Text on dark backgrounds            */
+  --color-text:         #1E1517;   /* Body text — warm near-black         */
+  --color-text-mid:     #5C464A;   /* Secondary text — muted rose-brown   */
+  --color-text-muted:   #9C7E82;   /* Captions, placeholders — dusty rose */
+  --color-text-inverse: #FDF8F8;   /* Text on dark backgrounds            */
 
-  --color-border:       #E4DDD7;   /* Subtle warm border                  */
-  --color-border-mid:   #CEC4BC;   /* Mid-weight border                   */
+  --color-border:       #EDD8DA;   /* Subtle blush border                 */
+  --color-border-mid:   #D9B8BB;   /* Mid-weight blush border             */
 
-  --color-promo-bg:     #2E2420;   /* Dark warm bg for promo section      */
+  --color-promo-bg:     #2A1A1C;   /* Deep plum-brown for promo section   */
 
   /* --- Typography ---
      System font stack — no external dependency by default.
@@ -503,7 +511,7 @@ time { font-style: normal; }
 
 .logo-mark {
   font-size: 1.25rem;
-  color: var(--color-accent);
+  color: var(--color-accent-brand);   /* Brand pink ✦ — purely decorative */
   line-height: 1;
 }
 
@@ -724,6 +732,8 @@ section {
   padding-block: 0;
   position: relative;
   background-color: var(--color-bg);
+  /* Brand pink top stripe — subtle visual signature */
+  border-top: 3px solid var(--color-accent-brand);
   /* No giant full-screen layout — content leads */
 }
 
@@ -985,7 +995,7 @@ section {
 }
 
 .chooser-icon {
-  color: var(--color-accent);
+  color: var(--color-accent-brand);   /* Brand pink icons — decorative */
   line-height: 1;
   flex-shrink: 0;
 }
@@ -1054,9 +1064,9 @@ section {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-accent);
+  color: var(--color-accent-brand);
   padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--color-accent);
+  border: 1px solid var(--color-accent-brand);
   border-radius: var(--radius-sm);
 }
 
@@ -1232,7 +1242,7 @@ section {
 }
 
 .testimonial-stars {
-  color: var(--color-accent);
+  color: var(--color-accent-brand);   /* Brand pink stars */
   font-size: var(--text-base);
   line-height: 1;
   letter-spacing: 0.05em;
@@ -1356,7 +1366,7 @@ section {
 }
 
 .credential-icon {
-  color: var(--color-accent);
+  color: var(--color-accent-brand);   /* Brand pink ✓ marks — decorative */
   font-size: var(--text-base);
   flex-shrink: 0;
   margin-top: 1px;
@@ -1644,7 +1654,7 @@ section {
 }
 
 .footer-logo .logo-mark {
-  color: var(--color-accent);
+  color: var(--color-accent-brand);   /* Brand pink ✦ in footer */
 }
 
 .footer-tagline {

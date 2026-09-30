@@ -223,12 +223,25 @@ Then in `css/styles.css`, update the font tokens:
 
 All colours are in CSS custom properties at the top of `styles.css`.
 
-The main ones to update if branding changes:
+The brand pink is `#FFB0B6`. The full palette:
 
 ```css
---color-accent:       #C2866A;  /* Primary accent — buttons, links, highlights */
---color-accent-hover: #A96D53;  /* Hover state */
---color-accent-light: #F0DDD3;  /* Light tint background */
---color-bg:           #FAF8F5;  /* Page background */
---color-promo-bg:     #2E2420;  /* Dark promo section background */
+/* Brand pink — decorative use (logo mark, icons, stars, borders) */
+--color-accent-brand: #FFB0B6;
+
+/* Deep rose — interactive elements (buttons, links, focus states) */
+--color-accent:       #C2404A;
+--color-accent-hover: #A83039;
+
+/* Tint backgrounds */
+--color-accent-light: #FFF0F1;   /* Light blush tint */
+--color-surface-warm: #FFF0F1;   /* Blush mist panels */
+
+/* Page backgrounds */
+--color-bg:           #FDF8F8;   /* Warm blush-cream */
+--color-bg-alt:       #F5EDEE;   /* Soft blush-grey */
+
+/* Dark sections */
+--color-promo-bg:     #2A1A1C;   /* Deep plum-brown promo background */
+--color-bg-dark:      #2A1A1C;   /* Footer */
 ```
