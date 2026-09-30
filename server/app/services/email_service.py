@@ -33,7 +33,7 @@ def send_invoice_email(
     total_amount: str,
     remaining_balance: str,
     business_name: str,
-) -> None:
+) -> str | None:
     """
     Send an invoice PDF to the client via email.
 
@@ -106,7 +106,7 @@ An official receipt will be issued separately as required by the BIR.
 
     provider = os.getenv("EMAIL_PROVIDER", "mailjet").strip().lower()
     if provider == "mailjet":
-        _send_with_mailjet(
+        return _send_with_mailjet(
             recipient_email,
             recipient_name,
             invoice_number,
@@ -148,7 +148,7 @@ def _send_with_mailjet(
     body_text: str,
     body_html: str,
     business_name: str,
-) -> None:
+) -> str | None:
     api_key = os.getenv("MAILJET_API_KEY", "").strip()
     secret_key = os.getenv("MAILJET_SECRET_KEY", "").strip()
     sender_email = os.getenv("EMAIL_FROM", "").strip()
@@ -194,6 +194,36 @@ def _send_with_mailjet(
                 raise EmailDeliveryError(
                     "The email provider could not accept the invoice email."
                 )
+            try:
+                result = json.loads(response.read())
+            except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+                raise EmailDeliveryError(
+                    "The email provider returned an invalid confirmation."
+                ) from exc
+
+            messages = result.get("Messages") if isinstance(result, dict) else None
+            if not isinstance(messages, list) or len(messages) != 1:
+                raise EmailDeliveryError(
+                    "The email provider did not confirm the invoice email."
+                )
+
+            message = messages[0]
+            if not isinstance(message, dict) or message.get("Status") != "success":
+                raise EmailDeliveryError(
+                    "The email provider did not accept the invoice email."
+                )
+
+            recipients = message.get("To")
+            if not isinstance(recipients, list) or not any(
+                isinstance(recipient, dict)
+                and recipient.get("Email", "").casefold() == recipient_email.casefold()
+                for recipient in recipients
+            ):
+                raise EmailDeliveryError(
+                    "The email provider did not confirm the intended recipient."
+                )
+
+            return str(recipients[0]["MessageID"]) if recipients[0].get("MessageID") else None
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
         raise EmailDeliveryError(
             "The email provider could not be reached. Please try again later."

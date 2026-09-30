@@ -100,12 +100,18 @@ class MailjetEmailTests(unittest.TestCase):
         response = MagicMock()
         response.status = 200
         response.__enter__.return_value = response
+        response.read.return_value = json.dumps({
+            "Messages": [{
+                "Status": "success",
+                "To": [{"Email": "client@example.com", "MessageID": 12345}],
+            }],
+        }).encode("utf-8")
 
         with patch(
             "app.services.email_service.urllib.request.urlopen",
             return_value=response,
         ) as urlopen:
-            send_invoice_email(
+            message_id = send_invoice_email(
                 recipient_email="client@example.com",
                 recipient_name="Client Name",
                 invoice_number="INV-00001",
@@ -116,6 +122,7 @@ class MailjetEmailTests(unittest.TestCase):
                 business_name="Test Clinic",
             )
 
+        self.assertEqual(message_id, "12345")
         request = urlopen.call_args.args[0]
         self.assertEqual(request.full_url, "https://api.mailjet.com/v3.1/send")
         self.assertEqual(request.get_header("Authorization").split()[0], "Basic")
@@ -127,6 +134,24 @@ class MailjetEmailTests(unittest.TestCase):
         self.assertEqual(
             base64.b64decode(attachment["Base64Content"]), b"%PDF-test-content"
         )
+
+    def test_rejects_mailjet_per_message_error_in_http_200_response(self):
+        response = MagicMock()
+        response.status = 200
+        response.__enter__.return_value = response
+        response.read.return_value = json.dumps({
+            "Messages": [{"Status": "error", "Errors": [{"ErrorMessage": "rejected"}]}],
+        }).encode("utf-8")
+
+        with patch(
+            "app.services.email_service.urllib.request.urlopen",
+            return_value=response,
+        ):
+            with self.assertRaisesRegex(EmailDeliveryError, "did not accept"):
+                send_invoice_email(
+                    "client@example.com", "Client", "INV-1", b"pdf", "date",
+                    "100.00", "0.00", "Test Clinic",
+                )
 
     def test_requires_api_credentials_and_sender(self):
         with patch.dict("os.environ", {"MAILJET_SECRET_KEY": ""}):

@@ -43,7 +43,7 @@ function SendInvoiceDialog({ open, onClose, saleId, clientEmail, invoiceNumber }
     setSuccess(null)
     try {
       const result = await invoiceService.sendInvoice(saleId, email || null)
-      setSuccess(`Invoice sent to ${result.sent_to}`)
+      setSuccess(`Invoice accepted for delivery to ${result.sent_to}`)
     } catch (err) {
       setError(err.message)
     } finally {

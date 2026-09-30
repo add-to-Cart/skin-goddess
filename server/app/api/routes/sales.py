@@ -257,7 +257,7 @@ def send_invoice(
         )
 
     try:
-        send_invoice_email(
+        provider_message_id = send_invoice_email(
             recipient_email=email,
             recipient_name=ctx["client"]["full_name"],
             invoice_number=ctx["invoice_number"],
@@ -278,7 +278,8 @@ def send_invoice(
         )
 
     return {
-        "message": f"Invoice {ctx['invoice_number']} sent to {email}",
+        "message": f"Invoice {ctx['invoice_number']} accepted for delivery to {email}",
         "invoice_number": ctx["invoice_number"],
         "sent_to": email,
+        "provider_message_id": provider_message_id,
     }
