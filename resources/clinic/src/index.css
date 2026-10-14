@@ -1,0 +1,175 @@
+@import "tailwindcss";
+@import "./clinic.css";
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SKIN GODDESS — Design Tokens (Tailwind v4 @theme)
+   
+   Primary brand: muted rose, with cool neutral surfaces and slate text
+   Everything else is derived to support the brand without overwhelming it.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@theme {
+  /* ── Brand palette ── */
+  --color-brand:           #884c57;   /* The Skin Goddess brand color             */
+  --color-brand-hover:     #75404a;   /* Slightly deeper on hover                 */
+  --color-brand-active:    #653640;   /* Pressed / active state                   */
+  --color-brand-soft:      #f3e8ec;   /* Tinted background: selected rows, chips  */
+  --color-brand-subtle:    #f8f9fc;   /* Very light tint: hover backgrounds       */
+  --color-brand-strong:    #884c57;   /* Accessible dark variant for text on white*/
+
+  /* ── Neutrals ── */
+  --color-background:      #f7f5f6;   /* Page background — off-white, never stark */
+  --color-surface:         #ffffff;   /* Cards, panels, inputs                    */
+  --color-surface-raised:  #ffffff;   /* Elevated surfaces (modals, dropdowns)    */
+  --color-border:          #e6dfe2;   /* Default border                           */
+  --color-border-subtle:   #f0ebed;   /* Very faint dividers                      */
+
+  /* ── Text ── */
+  --color-text:            #322c31;   /* Primary text — near-black warm           */
+  --color-text-muted:      #766d74;   /* Secondary labels, captions               */
+  --color-text-disabled:   #94a3b8;   /* Disabled inputs                          */
+  --color-text-inverse:    #ffffff;   /* Text on dark/colored backgrounds         */
+
+  /* ── Sidebar ── */
+  --color-sidebar:         #633b48;   /* Sidebar background — warm dark           */
+  --color-sidebar-hover:   #754655;
+  --color-sidebar-active:  #885568; /* Brand tint on active item   */
+  --color-sidebar-text:    #f1e3e8;   /* Nav labels at rest                       */
+  --color-sidebar-text-active: #ffffff;
+
+  /* ── Semantic ── */
+  --color-success:         #41634c;
+  --color-success-bg:      #edf2eb;
+  --color-warning:         #8c591d;
+  --color-warning-bg:      #fcf2e0;
+  --color-danger:          #a14138;
+  --color-danger-bg:       #fbeeea;
+  --color-info:            #476578;
+  --color-info-bg:         #edf1f3;
+
+  /* ── Typography ── */
+  --font-sans:   system-ui, 'Segoe UI', Roboto, -apple-system, sans-serif;
+  --font-mono:   ui-monospace, Consolas, 'Courier New', monospace;
+
+  /* ── Layout ── */
+  --sidebar-width:         248px;
+  --header-height:         56px;
+  --content-max:           1280px;
+
+  /* ── Radius ── */
+  --radius-sm:   4px;
+  --radius:      8px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.05);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md:  0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --shadow-lg:  0 8px 24px rgba(0,0,0,0.10), 0 4px 8px rgba(0,0,0,0.04);
+
+  /* ── Spacing additions ── */
+  --spacing-sidebar: var(--sidebar-width);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BASE STYLES
+   ──────────────────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-background);
+  min-height: 100vh;
+}
+
+#root {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SHADCN/UI CSS VARIABLE BRIDGE
+   shadcn components expect --background, --foreground, --primary etc.
+   We bridge them to our Skin Goddess tokens here.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  --background:          var(--color-background);
+  --foreground:          var(--color-text);
+
+  --card:                var(--color-surface);
+  --card-foreground:     var(--color-text);
+
+  --popover:             var(--color-surface-raised);
+  --popover-foreground:  var(--color-text);
+
+  --primary:             var(--color-brand);
+  --primary-foreground:  #ffffff;
+
+  --secondary:           var(--color-brand-soft);
+  --secondary-foreground: var(--color-brand-strong);
+
+  --muted:               var(--color-border-subtle);
+  --muted-foreground:    var(--color-text-muted);
+
+  --accent:              var(--color-brand-subtle);
+  --accent-foreground:   var(--color-brand-strong);
+
+  --destructive:         var(--color-danger);
+  --destructive-foreground: #ffffff;
+
+  --border:              var(--color-border);
+  --input:               var(--color-border);
+  --ring:                var(--color-brand);
+
+  --radius:              var(--radius-md);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SCROLLBAR — subtle, branded
+   ──────────────────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-brand); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FOCUS RING — brand-colored, accessible
+   ──────────────────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 2px;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TYPOGRAPHY RESET
+   ──────────────────────────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--color-text);
+  margin: 0;
+}
+
+p { margin: 0; color: var(--color-text-muted); }
+
+a {
+  color: var(--color-brand-strong);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }

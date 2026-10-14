@@ -1,0 +1,12 @@
+{
+  "name": "skin-goddess-clinic",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node resources/clinic/build.mjs",
+    "build:clinic": "npm run build",
+    "dev": "npm --prefix resources/clinic run dev",
+    "check": "npm --prefix resources/clinic run lint",
+    "setup:frontend": "npm --prefix resources/clinic ci"
+  }
+}
