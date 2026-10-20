@@ -37,6 +37,9 @@ td, th { vertical-align: top; padding: 7pt; }
 <td width="35%" class="right">
 <h2>Invoice</h2>
 <p><strong>{{ $invoice_number }}</strong></p>
+@if($correction_revision > 0)
+<p><strong>Corrected invoice — revision {{ $correction_revision }}</strong></p>
+@endif
 <p class="muted">Date: {{ $sale_date }}</p>
 </td>
 </tr></table>

@@ -20,13 +20,15 @@ import {
  *   onSaved          — (sale) => void
  *   defaultClientId  — pre-select client (optional)
  */
-export default function SaleForm({ open, onClose, onSaved, defaultClientId = null }) {
+export default function SaleForm({ open, onClose, onSaved, defaultClientId = null, sale = null, onReload = null }) {
+  const correcting = Boolean(sale)
   const [clients, setClients]   = useState([])
   const [services, setServices] = useState([])
 
   const [clientId, setClientId] = useState('')
   const [date, setDate]         = useState(todayISO())
   const [notes, setNotes]       = useState('')
+  const [reason, setReason]     = useState('')
   const [items, setItems]       = useState([{ description: '', quantity: '1', unit_price: '' }])
 
   const [errors, setErrors]     = useState({})
@@ -35,20 +37,21 @@ export default function SaleForm({ open, onClose, onSaved, defaultClientId = nul
 
   useEffect(() => {
     if (!open) return
-    const clientsP  = defaultClientId ? Promise.resolve(null) : clientsService.getAll()
-    const servicesP = servicesService.getAll(true)
+    const clientsP  = defaultClientId || correcting ? Promise.resolve(null) : clientsService.getAll()
+    const servicesP = correcting ? Promise.resolve([]) : servicesService.getAll(true)
     Promise.all([clientsP, servicesP]).then(([cls, svcs]) => {
       if (cls) setClients(cls)
       setServices(svcs)
-    })
+    }).catch((error) => setApiError(error.message))
 
     setClientId(defaultClientId ? String(defaultClientId) : '')
-    setDate(todayISO())
-    setNotes('')
-    setItems([{ description: '', quantity: '1', unit_price: '' }])
+    setDate(sale?.sale_date ?? todayISO())
+    setNotes(sale?.notes ?? '')
+    setReason('')
+    setItems(sale ? sale.items.map((item) => ({ id: item.id, description: item.description, quantity: String(item.quantity), unit_price: String(item.unit_price) })) : [{ description: '', quantity: '1', unit_price: '' }])
     setErrors({})
     setApiError(null)
-  }, [open])
+  }, [open, sale, defaultClientId, correcting])
 
   function addItem() {
     setItems((prev) => [...prev, { description: '', quantity: '1', unit_price: '' }])
@@ -79,7 +82,8 @@ export default function SaleForm({ open, onClose, onSaved, defaultClientId = nul
 
   function validate() {
     const e = {}
-    if (!clientId) e.clientId = 'Select a client.'
+    if (!correcting && !clientId) e.clientId = 'Select a client.'
+    if (correcting && !reason.trim()) e.reason = 'Enter the reason for this correction.'
     if (!date)     e.date     = 'Sale date is required.'
     if (items.length === 0) e.items = 'Add at least one line item.'
     items.forEach((row, i) => {
@@ -96,20 +100,27 @@ export default function SaleForm({ open, onClose, onSaved, defaultClientId = nul
     if (Object.keys(v).length) { setErrors(v); return }
 
     const payload = {
-      client_id: Number(clientId),
       sale_date: date,
       notes: notes.trim() || null,
       items: items.map((row) => ({
+        ...(correcting && row.id ? { id: row.id } : {}),
         description: row.description.trim(),
         quantity: parseFloat(row.quantity),
         unit_price: parseFloat(row.unit_price),
       })),
     }
 
+    if (correcting) {
+      payload.reason = reason.trim()
+      payload.expected_version = sale.version
+    } else {
+      payload.client_id = Number(clientId)
+    }
+
     setSubmit(true)
     setApiError(null)
     try {
-      const saved = await salesService.create(payload)
+      const saved = correcting ? await salesService.update(sale.id, payload) : await salesService.create(payload)
       onSaved(saved)
     } catch (err) {
       setApiError(err.message)
@@ -122,15 +133,15 @@ export default function SaleForm({ open, onClose, onSaved, defaultClientId = nul
     <FormDialog
       open={open}
       onClose={onClose}
-      title="New Sale"
-      description="Record a sale transaction. Add one or more line items."
+      title={correcting ? 'Correct Sale' : 'New Sale'}
+      description={correcting ? 'The client stays fixed. Original values and your reason will be preserved. Existing payments will not change. The total cannot be below recorded payments.' : 'Record a sale transaction. Add one or more line items.'}
       onSubmit={handleSubmit}
       submitting={submitting}
-      submitLabel="Create Sale"
+      submitLabel={correcting ? 'Save Correction' : 'Create Sale'}
       error={apiError}
     >
       {/* Client */}
-      {!defaultClientId && (
+      {!defaultClientId && !correcting && (
         <FormField label="Client" required error={errors.clientId}>
           <Select value={clientId} onValueChange={setClientId}>
             <SelectTrigger>
@@ -199,8 +210,8 @@ export default function SaleForm({ open, onClose, onSaved, defaultClientId = nul
               <div>
                 <Input
                   type="number"
-                  min="1"
-                  step="0.01"
+                  min="0.001"
+                  step="0.001"
                   placeholder="Qty"
                   value={row.quantity}
                   onChange={(e) => updateItem(i, 'quantity', e.target.value)}
@@ -251,6 +262,10 @@ export default function SaleForm({ open, onClose, onSaved, defaultClientId = nul
           placeholder="Optional notes…"
         />
       </FormField>
+      {correcting && <FormField label="Correction Reason" required error={errors.reason}>
+        <Input value={reason} onChange={(event) => setReason(event.target.value)} maxLength={2000} placeholder="Explain what was incorrect and why it is changing" />
+      </FormField>}
+      {correcting && apiError && onReload && <Button type="button" variant="outline" onClick={onReload} disabled={submitting}>Discard edits and reload sale</Button>}
     </FormDialog>
   )
 }

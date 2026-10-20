@@ -38,7 +38,7 @@ function ExpenseForm({ open, onClose, expense = null, onSaved }) {
             amount:       String(expense.amount),
             notes:        expense.notes ?? '',
           }
-        : EMPTY
+        : { ...EMPTY, expense_date: todayISO() }
       )
       setErrors({})
       setApiError(null)

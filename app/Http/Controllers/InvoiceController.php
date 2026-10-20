@@ -9,6 +9,7 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -42,13 +43,17 @@ class InvoiceController extends Controller
     /** @return array<string, mixed> */
     private function context(int $id): array
     {
-        $sale = Sale::with(['client', 'items', 'payments' => fn ($query) => $query->where('status', 'recorded')->orderBy('payment_date')->orderBy('id')])->findOrFail($id);
-        $paid = BigDecimal::zero();
-        foreach ($sale->payments as $payment) {
-            $paid = $paid->plus($payment->amount);
-        }
+        return DB::transaction(function () use ($id): array {
+            $sale = Sale::sharedLock()->findOrFail($id);
+            $sale->load(['client', 'items', 'payments' => fn ($query) => $query->where('status', 'recorded')->orderBy('payment_date')->orderBy('id')]);
+            $revision = (int) DB::table('sale_corrections')->where('sale_id', $id)->max('revision');
+            $paid = BigDecimal::zero();
+            foreach ($sale->payments as $payment) {
+                $paid = $paid->plus($payment->amount);
+            }
 
-        return ['business' => config('clinic.business'), 'invoice_number' => 'INV-'.str_pad((string) $id, 5, '0', STR_PAD_LEFT), 'sale_date' => $sale->sale_date->toDateString(), 'payment_status' => $sale->payment_status, 'client' => ['full_name' => $sale->client->first_name.' '.$sale->client->last_name, 'phone' => $sale->client->phone, 'email' => $sale->client->email, 'address' => $sale->client->address], 'items' => $sale->items->map(fn ($item) => ['description' => $item->description, 'quantity' => $item->quantity, 'unit_price' => $item->unit_price, 'line_total' => $item->line_total])->all(), 'payments' => $sale->payments->map(fn ($payment) => ['payment_date' => $payment->payment_date->toDateString(), 'payment_method' => $payment->payment_method, 'amount' => $payment->amount])->all(), 'total_amount' => $sale->total_amount, 'total_paid' => (string) $paid->toScale(2), 'remaining_balance' => (string) BigDecimal::of($sale->total_amount)->minus($paid)->toScale(2)];
+            return ['business' => config('clinic.business'), 'correction_revision' => $revision, 'invoice_number' => 'INV-'.str_pad((string) $id, 5, '0', STR_PAD_LEFT), 'sale_date' => $sale->sale_date->toDateString(), 'payment_status' => $sale->payment_status, 'client' => ['full_name' => $sale->client->first_name.' '.$sale->client->last_name, 'phone' => $sale->client->phone, 'email' => $sale->client->email, 'address' => $sale->client->address], 'items' => $sale->items->map(fn ($item) => ['description' => $item->description, 'quantity' => $item->quantity, 'unit_price' => $item->unit_price, 'line_total' => $item->line_total])->all(), 'payments' => $sale->payments->map(fn ($payment) => ['payment_date' => $payment->payment_date->toDateString(), 'payment_method' => $payment->payment_method, 'amount' => $payment->amount])->all(), 'total_amount' => $sale->total_amount, 'total_paid' => (string) $paid->toScale(2), 'remaining_balance' => (string) BigDecimal::of($sale->total_amount)->minus($paid)->toScale(2)];
+        });
     }
 
     /** @param array<string, mixed> $context */

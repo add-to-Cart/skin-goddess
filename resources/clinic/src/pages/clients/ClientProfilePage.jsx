@@ -53,30 +53,21 @@ export default function ClientProfilePage() {
   const loadAll = useCallback(() => {
     setLoading(true)
     setError(null)
-    Promise.allSettled([
+    Promise.all([
       clientsService.getById(id),
       proceduresService.getAll({ client_id: id }),
       salesService.getAll({ client_id: id }),
       followUpsService.getAll({ client_id: id }),
       servicesService.getAll(false),
     ])
-      .then(([clientRes, procsRes, salesRes, fuRes, svcsRes]) => {
-        // Client is critical — if it failed, show an error
-        if (clientRes.status === 'rejected') {
-          setError(clientRes.reason?.message ?? 'Failed to load client.')
-          return
-        }
-
-        setClient(clientRes.value)
-        setProcedures(procsRes.status  === 'fulfilled' ? procsRes.value  : [])
-        setSales(salesRes.status       === 'fulfilled' ? salesRes.value  : [])
-        setFollowUps(fuRes.status      === 'fulfilled' ? fuRes.value     : [])
-
-        if (svcsRes.status === 'fulfilled') {
-          const map = {}
-          svcsRes.value.forEach((svc) => { map[svc.id] = svc.name })
-          setServiceMap(map)
-        }
+      .then(([clientRow, procedureRows, saleRows, followUpRows, serviceRows]) => {
+        setClient(clientRow)
+        setProcedures(procedureRows)
+        setSales(saleRows)
+        setFollowUps(followUpRows)
+        const map = {}
+        serviceRows.forEach((service) => { map[service.id] = service.name })
+        setServiceMap(map)
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
@@ -85,7 +76,7 @@ export default function ClientProfilePage() {
   useEffect(() => { loadAll() }, [loadAll])
 
   if (loading) return <LoadingState message="Loading client profile…" />
-  if (error)   return <div className="mt-4"><ErrorState message={error} /></div>
+  if (error)   return <div className="mt-4"><ErrorState message={`Client history could not be loaded: ${error}`} /><Button variant="outline" onClick={loadAll}>Retry</Button></div>
   if (!client) return <div className="mt-4"><ErrorState message="Client not found." /></div>
 
   const totalBilled = sales.reduce((s, sale) => s + Number(sale.total_amount), 0)

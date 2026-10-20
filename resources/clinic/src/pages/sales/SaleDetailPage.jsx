@@ -23,6 +23,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import PaymentForm from './PaymentForm'
+import SaleForm from './SaleForm'
 import FormDialog, { FormField } from '@/components/shared/FormDialog'
 
 const STATUS_VARIANT = { paid: 'success', partial: 'warning', unpaid: 'danger' }
@@ -174,17 +175,22 @@ export default function SaleDetailPage() {
   const [emailOpen, setEmailOpen]     = useState(false)
   const [paymentOpen, setPaymentOpen] = useState(false)
   const [voidingPayment, setVoidingPayment] = useState(null)
+  const [correctionOpen, setCorrectionOpen] = useState(false)
+  const [corrections, setCorrections] = useState([])
   const isAdmin = authService.isAdmin()
 
   const loadData = useCallback(() => {
     setLoading(true)
+    setError(null)
     Promise.all([
       salesService.getById(id),
       paymentsService.getHistoryBySale(id),
+      salesService.getCorrections(id),
     ])
-      .then(([s, h]) => {
+      .then(([s, h, revisions]) => {
         setSale(s)
         setHistory(h)
+        setCorrections(revisions)
         return clientsService.getById(s.client_id)
           .then((c) => { if (c?.email) setClientEmail(c.email) })
           .catch(() => null)
@@ -235,6 +241,7 @@ export default function SaleDetailPage() {
           </span>
         }
       >
+        {isAdmin && <Button variant="outline" size="sm" onClick={() => setCorrectionOpen(true)}>Correct Sale</Button>}
         <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloading}>
           <Download className="h-4 w-4" />
           {downloading ? 'Generating…' : 'Download'}
@@ -249,6 +256,7 @@ export default function SaleDetailPage() {
       </PageHeader>
 
       {downloadError && <ErrorState message={downloadError} className="mb-4" />}
+      {corrections.length > 0 && <p className="text-sm mb-4" role="status">Corrected invoice · revision {corrections[0].revision}. The invoice number is unchanged; previous values are preserved below.</p>}
 
       {/* Payment summary stats */}
       {history && (
@@ -317,6 +325,22 @@ export default function SaleDetailPage() {
       )}
 
       {/* Send Invoice Dialog */}
+      {corrections.length > 0 && <Card className="mt-5">
+        <CardHeader><CardTitle>Sale Correction History</CardTitle></CardHeader>
+        <CardContent>
+          {corrections.map((correction) => <details key={correction.id} className="mb-4">
+            <summary className="cursor-pointer">Revision {correction.revision} · {correction.corrected_by_username} · {new Date(correction.created_at).toLocaleString('en-PH')}</summary>
+            <p className="text-sm my-3">Reason: {correction.reason}</p>
+            {[['Before', correction.before_snapshot], ['After', correction.after_snapshot]].map(([label, snapshot]) => <section key={label} className="mb-4" aria-label={`${label} correction ${correction.revision}`}>
+              <h3 className="font-semibold">{label}</h3>
+              <p className="text-sm">{snapshot.sale_date} · {formatCurrency(snapshot.total_amount)} · {snapshot.payment_status}</p>
+              <p className="text-sm">Notes: {snapshot.notes || '—'}</p>
+              <DataTable columns={['Description', 'Qty', 'Unit Price', 'Total']} rows={snapshot.items.map((item) => [item.description, item.quantity, formatCurrency(item.unit_price), formatCurrency(item.line_total)])} />
+            </section>)}
+          </details>)}
+        </CardContent>
+      </Card>}
+      {correctionOpen && <SaleForm open={correctionOpen} sale={sale} onClose={() => setCorrectionOpen(false)} onSaved={() => { setCorrectionOpen(false); loadData() }} onReload={() => { setCorrectionOpen(false); loadData() }} />}
       <SendInvoiceDialog
         open={emailOpen}
         onClose={() => setEmailOpen(false)}

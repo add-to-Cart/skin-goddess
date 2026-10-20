@@ -15,6 +15,7 @@ use Illuminate\Support\Carbon;
  * @property string $total_amount
  * @property string $payment_status
  * @property string|null $notes
+ * @property int $version
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Client $client
@@ -39,6 +40,7 @@ class Sale extends Model
         return [
             'sale_date' => 'date:Y-m-d',
             'total_amount' => 'decimal:2',
+            'version' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];

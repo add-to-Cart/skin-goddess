@@ -102,6 +102,6 @@ class PaymentController extends Controller
     private function syncStatus(Sale $sale): void
     {
         $paid = BigDecimal::of((string) $sale->payments()->where('status', 'recorded')->sum('amount'));
-        $sale->update(['payment_status' => $paid->isLessThanOrEqualTo(0) ? 'unpaid' : ($paid->isGreaterThanOrEqualTo($sale->total_amount) ? 'paid' : 'partial')]);
+        $sale->forceFill(['payment_status' => $paid->isLessThanOrEqualTo(0) ? 'unpaid' : ($paid->isGreaterThanOrEqualTo($sale->total_amount) ? 'paid' : 'partial'), 'version' => $sale->version + 1])->save();
     }
 }

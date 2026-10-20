@@ -13,6 +13,7 @@ const salesService = {
   getAll:     (params)   => api.get(`/sales${buildQuery(params)}`),
   getById:    (id)       => api.get(`/sales/${id}`),
   getSummary: (id)       => api.get(`/sales/${id}/summary`),
+  getCorrections: (id)   => api.get(`/sales/${id}/corrections`),
   create:     (data)     => api.post('/sales', data),
   update:     (id, data) => api.patch(`/sales/${id}`, data),
 }

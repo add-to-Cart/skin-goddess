@@ -35,7 +35,8 @@ Route::middleware(ClinicAuthentication::class)->group(function (): void {
     Route::get('inventory/purchases', [InventoryController::class, 'purchases']);
     Route::post('inventory/purchases', [InventoryController::class, 'storePurchase']);
     Route::get('inventory/purchases/{id}', [InventoryController::class, 'purchase']);
-    Route::apiResource('sales', SaleController::class)->except('destroy');
+    Route::apiResource('sales', SaleController::class)->except(['destroy', 'update']);
+    Route::get('sales/{id}/corrections', [SaleController::class, 'corrections']);
     Route::get('sales/{id}/summary', [SaleController::class, 'summary']);
     Route::get('sales/{id}/invoice', [InvoiceController::class, 'download']);
     Route::post('sales/{id}/send-invoice', [InvoiceController::class, 'send']);
@@ -46,6 +47,7 @@ Route::middleware(ClinicAuthentication::class)->group(function (): void {
     Route::match(['patch', 'delete'], 'payments/{id}', [PaymentController::class, 'immutable']);
 });
 Route::middleware(ClinicAuthentication::class.':admin')->group(function (): void {
+    Route::match(['put', 'patch'], 'sales/{id}', [SaleController::class, 'update']);
     Route::apiResource('auth/users', ClinicAuthController::class)->except('show');
     Route::apiResource('expenses', ExpenseController::class);
     Route::post('payments/{id}/void', [PaymentController::class, 'void']);
