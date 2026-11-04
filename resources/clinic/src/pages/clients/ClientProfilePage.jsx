@@ -1,21 +1,21 @@
-import { useEffect, useState, useCallback } from 'react'
-import { Link, useParams } from 'react-router-dom'
-import {
-  ArrowLeft, Phone, Mail, MapPin, FileText,
-  Stethoscope, ShoppingCart, CalendarClock, Users, Plus,
-} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Link, useParams, useNavigate } from 'react-router-dom'
+import * as Menu from '@radix-ui/react-dropdown-menu'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from '@/components/ui/dialog'
+import { ArrowLeft, Pencil, UserRound, Archive, MoreHorizontal, Plus, ChevronDown, Info, Stethoscope, Receipt, CalendarClock } from 'lucide-react'
+import authService from '@/services/authService'
 import clientsService from '@/services/clientsService'
 import proceduresService from '@/services/proceduresService'
 import salesService from '@/services/salesService'
 import followUpsService from '@/services/followUpsService'
 import servicesService from '@/services/servicesService'
 import { formatCurrency } from '@/lib/utils'
-import PageHeader from '@/components/shared/PageHeader'
-import StatCard from '@/components/shared/StatCard'
+import { summarizeClientSales } from './profileFinancials'
 import LoadingState from '@/components/shared/LoadingState'
 import ErrorState from '@/components/shared/ErrorState'
 import EmptyState from '@/components/shared/EmptyState'
-import { DataTable } from '@/components/shared/DataTable'
+import { DataTable, MobileCard, MobileField } from '@/components/shared/DataTable'
+import FormDialog, { FormField } from '@/components/shared/FormDialog'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -23,310 +23,176 @@ import ClientForm from './ClientForm'
 import ProcedureForm from '../procedures/ProcedureForm'
 import FollowUpForm from '../follow-ups/FollowUpForm'
 import SaleForm from '../sales/SaleForm'
+import PaymentForm from '../sales/PaymentForm'
 
-const PAYMENT_STATUS  = { paid: 'success', partial: 'warning', unpaid: 'danger' }
+const PAYMENT_STATUS = { paid: 'success', partial: 'warning', unpaid: 'danger' }
 const FOLLOW_UP_STATUS = { upcoming: 'info', due: 'warning', completed: 'success', cancelled: 'neutral' }
-const TABS = ['Treatment Records', 'Sales & Payments', 'Follow-ups']
+const TABS = ['Treatment records', 'Sales & payments', 'Follow-ups']
 
 export default function ClientProfilePage() {
   const { id } = useParams()
-
-  const [client, setClient]         = useState(null)
-  const [procedures, setProcedures] = useState([])
-  const [sales, setSales]           = useState([])
-  const [followUps, setFollowUps]   = useState([])
-  const [serviceMap, setServiceMap] = useState({})
-  const [loading, setLoading]       = useState(true)
-  const [error, setError]           = useState(null)
-  const [tab, setTab]               = useState(0)
-
-  // Modal state
-  const [editClientOpen,    setEditClientOpen]    = useState(false)
+  const navigate = useNavigate()
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [archiveOpen, setArchiveOpen] = useState(false)
+  const [archiving, setArchiving] = useState(false)
+  const [archiveError, setArchiveError] = useState(null)
+  const [snapshot, setSnapshot] = useState({ status: 'loading' })
+  const [reload, setReload] = useState(0)
+  const [tab, setTab] = useState(0)
+  const [editClientOpen, setEditClientOpen] = useState(false)
   const [procedureFormOpen, setProcedureFormOpen] = useState(false)
-  const [editingProcedure,  setEditingProcedure]  = useState(null)
-  const [saleFormOpen,      setSaleFormOpen]      = useState(false)
-  const [followUpFormOpen,  setFollowUpFormOpen]  = useState(false)
+  const [editingProcedure, setEditingProcedure] = useState(null)
+  const [saleFormOpen, setSaleFormOpen] = useState(false)
+  const [followUpFormOpen, setFollowUpFormOpen] = useState(false)
+  const [paymentChoiceOpen, setPaymentChoiceOpen] = useState(false)
+  const [paymentChoice, setPaymentChoice] = useState('')
+  const [paymentSale, setPaymentSale] = useState(null)
 
-  function openNewProcedure()  { setEditingProcedure(null); setProcedureFormOpen(true) }
-  function openEditProcedure(p) { setEditingProcedure(p);   setProcedureFormOpen(true) }
+  useEffect(() => {
+    let active = true
+    async function load() {
+      try {
+        const [client, procedures, saleRows, followUps, services] = await Promise.all([
+          clientsService.getById(id), proceduresService.getAll({ client_id: id }),
+          salesService.getAll({ client_id: id }), followUpsService.getAll({ client_id: id }), servicesService.getAll(false),
+        ])
+        const sales = await Promise.all(saleRows.map(async (sale) => {
+          const [financial, progress] = await Promise.all([
+            salesService.getSummary(sale.id), sale.package_service_id ? salesService.getSessions(sale.id) : Promise.resolve(null),
+          ])
+          return { ...sale, ...financial, financial, progress }
+        }))
+        const totals = summarizeClientSales(sales)
+        if (active) setSnapshot({ status: 'ready', client, procedures, sales, followUps, totals, serviceMap: Object.fromEntries(services.map((service) => [service.id, service.name])) })
+      } catch (error) {
+        if (active) setSnapshot({ status: 'error', clientId: id, message: error.message })
+      }
+    }
+    load()
+    return () => { active = false }
+  }, [id, reload])
 
-  const loadAll = useCallback(() => {
-    setLoading(true)
-    setError(null)
-    Promise.all([
-      clientsService.getById(id),
-      proceduresService.getAll({ client_id: id }),
-      salesService.getAll({ client_id: id }),
-      followUpsService.getAll({ client_id: id }),
-      servicesService.getAll(false),
-    ])
-      .then(([clientRow, procedureRows, saleRows, followUpRows, serviceRows]) => {
-        setClient(clientRow)
-        setProcedures(procedureRows)
-        setSales(saleRows)
-        setFollowUps(followUpRows)
-        const map = {}
-        serviceRows.forEach((service) => { map[service.id] = service.name })
-        setServiceMap(map)
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [id])
+  function refresh() {
+    setSnapshot({ status: 'loading' })
+    setReload((value) => value + 1)
+  }
+  function openTreatment(procedure = null) {
+    setEditingProcedure(procedure)
+    setProcedureFormOpen(true)
+  }
 
-  useEffect(() => { loadAll() }, [loadAll])
+  if (snapshot.status === 'error' && snapshot.clientId === id) return <div className="space-y-3"><ErrorState message={`Client profile unavailable: ${snapshot.message} Financial totals have not been displayed.`} /><Button variant="outline" onClick={refresh}>Retry client profile</Button><Link className="block" to="/clients">Back to clients</Link></div>
+  if (snapshot.status !== 'ready' || String(snapshot.client.id) !== id) return <LoadingState message="Loading client details, balances and package history…" />
 
-  if (loading) return <LoadingState message="Loading client profile…" />
-  if (error)   return <div className="mt-4"><ErrorState message={`Client history could not be loaded: ${error}`} /><Button variant="outline" onClick={loadAll}>Retry</Button></div>
-  if (!client) return <div className="mt-4"><ErrorState message="Client not found." /></div>
+  const { client, procedures, sales, followUps, totals, serviceMap } = snapshot
+  const clientName = `${client.first_name} ${client.last_name}`
+  const packages = sales.filter((sale) => sale.progress)
+  const payableSales = sales.filter((sale) => Number(sale.financial.remaining_balance) > 0)
+  const selectedPayment = payableSales.find((sale) => String(sale.id) === paymentChoice)
+  const packageState = (sale) => sale.progress.is_canceled ? 'Canceled — no new sessions' : sale.progress.remaining_sessions === 0 ? 'All sessions used' : 'Sessions available'
+  const treatmentName = (procedure) => serviceMap[procedure.service_id] ?? `Treatment #${procedure.service_id}`
+  const treatmentPrice = (procedure) => procedure.package_sale_id ? 'Included in package' : procedure.price != null ? formatCurrency(procedure.price) : '—'
+  function treatmentStatus(procedure) {
+    return <div className="flex flex-wrap gap-1">{procedure.package_sale_id ? <Badge variant={procedure.reversed_at ? 'danger' : 'success'}>{procedure.reversed_at ? 'Reversed — excluded from progress' : 'Completed package session'}</Badge> : <Badge variant="neutral">Standalone record</Badge>}{procedure.package_sale?.canceled_at && <Badge variant="danger">Canceled package</Badge>}</div>
+  }
+  function treatmentAction(procedure) {
+    return procedure.package_sale_id ? <Button variant="outline" asChild><Link to={`/sales/${procedure.package_sale_id}`}>Purchase #{procedure.package_sale_id} history</Link></Button> : <Button variant="ghost" size="icon" title={`Edit treatment #${procedure.id}`} aria-label={`Edit treatment #${procedure.id}`} onClick={() => openTreatment(procedure)}><Pencil aria-hidden="true" /></Button>
+  }
+  function saleAction(sale) {
+    return <Button variant="outline" asChild><Link to={`/sales/${sale.id}`}>Sale #{sale.id} details</Link></Button>
+  }
 
-  const totalBilled = sales.reduce((s, sale) => s + Number(sale.total_amount), 0)
+  return <div className="client-profile min-w-0 space-y-5">
+    <Link to="/clients" className="inline-flex min-h-11 items-center gap-2 text-sm"><ArrowLeft size={16} />Clients</Link>
+    <section aria-labelledby="client-name" className="profile-overview">
+      <header className="profile-heading">
+        <div className="profile-person"><span className="profile-avatar" aria-hidden="true"><UserRound size={26} /></span><div className="min-w-0"><div className="flex flex-wrap items-center gap-x-3 gap-y-1"><h1 id="client-name" className="text-2xl font-semibold wrap-anywhere">{clientName}</h1><Badge variant={client.is_active ? 'success' : 'neutral'}>{client.is_active ? 'Active' : 'Inactive'}</Badge></div><p className="mt-1 text-sm text-[var(--color-text-muted)]">Client #{client.id}{client.phone ? ` · ${client.phone}` : ''}</p></div></div>
+        <div className="profile-heading-actions">
+          <Menu.Root modal={false}><Menu.Trigger asChild><Button aria-label="New record" className="gap-2"><Plus aria-hidden="true" />New record<ChevronDown aria-hidden="true" /></Button></Menu.Trigger><Menu.Portal><Menu.Content align="end" sideOffset={8} collisionPadding={16} className="profile-menu" onCloseAutoFocus={(event) => { if (procedureFormOpen || saleFormOpen || followUpFormOpen) event.preventDefault() }}>
+            <Menu.Item className="profile-menu-item" onSelect={() => openTreatment()}><Stethoscope aria-hidden="true" />Treatment record</Menu.Item>
+            <Menu.Item className="profile-menu-item" onSelect={() => setSaleFormOpen(true)}><Receipt aria-hidden="true" />Sale or package</Menu.Item>
+            <Menu.Item className="profile-menu-item" onSelect={() => setFollowUpFormOpen(true)}><CalendarClock aria-hidden="true" />Follow-up reminder</Menu.Item>
+          </Menu.Content></Menu.Portal></Menu.Root>
+          <Menu.Root modal={false}><Menu.Trigger asChild><Button variant="ghost" size="icon" title="Client options" aria-label="Client options"><MoreHorizontal aria-hidden="true" /></Button></Menu.Trigger><Menu.Portal><Menu.Content align="end" sideOffset={8} collisionPadding={16} className="profile-menu" onCloseAutoFocus={(event) => { if (detailsOpen || editClientOpen || archiveOpen) event.preventDefault() }}>
+            <Menu.Item className="profile-menu-item" onSelect={() => setDetailsOpen(true)}><Info aria-hidden="true" />Client details</Menu.Item>
+            <Menu.Item className="profile-menu-item" onSelect={() => setEditClientOpen(true)}><Pencil aria-hidden="true" />Edit client</Menu.Item>
+            {authService.isAdmin() && <><Menu.Separator className="my-1 border-t border-[var(--color-border)]" /><Menu.Item className="profile-menu-item text-[var(--color-danger)]" onSelect={() => { setArchiveError(null); setArchiveOpen(true) }}><Archive aria-hidden="true" />Archive client</Menu.Item></>}
+          </Menu.Content></Menu.Portal></Menu.Root>
+        </div>
+      </header>
+      {client.notes && <p className="profile-notes whitespace-pre-wrap wrap-anywhere"><strong>Client notes: </strong>{client.notes}</p>}
+      <div className="profile-financial"><dl className="profile-money">
+        {[['Total billed', totals.total_amount], ['Recorded payments', totals.total_paid], ['Outstanding balance', totals.remaining_balance]].map(([label, value]) => <div key={label} className="min-w-0"><dt className="text-xs text-[var(--color-text-muted)]">{label}</dt><dd className="mt-1 text-xl font-semibold tabular-nums wrap-anywhere">{formatCurrency(value)}</dd></div>)}
+      </dl>{payableSales.length > 0 && <Button variant="outline" onClick={() => { setPaymentChoice(''); setPaymentChoiceOpen(true) }}>Record Payment</Button>}</div>
+    </section>
 
-  return (
-    <div>
-      <div className="mb-4">
-        <Link
-          to="/clients"
-          className="inline-flex items-center gap-1.5 text-sm hover:underline"
-          style={{ color: 'var(--color-text-muted)' }}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Clients
-        </Link>
-      </div>
+    {packages.length > 0 && <section aria-labelledby="purchased-packages">
+      <h2 id="purchased-packages" className="mb-3 text-base font-semibold">Packages ({packages.length})</h2>
+      <div className="grid min-w-0 gap-4 xl:grid-cols-2">{packages.map((purchase) => <article key={purchase.id} className="min-w-0 rounded-md border bg-[var(--color-surface)] p-4" aria-label={`Purchase #${purchase.id}`}>
+        <div className="flex flex-wrap items-start justify-between gap-2"><div className="min-w-0"><h3 className="font-semibold wrap-anywhere">{serviceMap[purchase.package_service_id] ?? purchase.items[0]?.description}</h3><p className="mt-1 text-xs">Purchase #{purchase.id} · {purchase.sale_date}</p></div><Button variant="ghost" asChild><Link to={`/sales/${purchase.id}`}>Open #{purchase.id}</Link></Button></div>
+        <div className="my-3 flex flex-wrap gap-2"><Badge variant={purchase.progress.is_canceled ? 'danger' : purchase.progress.remaining_sessions === 0 ? 'neutral' : 'success'}>{packageState(purchase)}</Badge><Badge variant={PAYMENT_STATUS[purchase.payment_status] ?? 'neutral'}>Payment: {purchase.payment_status}</Badge></div>
+        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3 text-sm">{[['Price', purchase.financial.total_amount], ['Recorded payments', purchase.financial.total_paid], ['Outstanding', purchase.financial.remaining_balance]].map(([label, value]) => <div key={label}><dt className="text-xs text-[var(--color-text-muted)]">{label}</dt><dd className="mt-1 font-semibold tabular-nums wrap-anywhere">{formatCurrency(value)}</dd></div>)}</dl>
+        <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-2 border-t pt-3 text-sm"><div><dt className="inline text-[var(--color-text-muted)]">Completed </dt><dd className="inline font-semibold">{purchase.progress.completed_sessions}/{purchase.progress.included_sessions}</dd></div><div><dt className="inline text-[var(--color-text-muted)]">{purchase.progress.is_canceled ? 'Unused — not redeemable ' : 'Remaining '}</dt><dd className="inline font-semibold">{purchase.progress.remaining_sessions}</dd></div></dl>
+        {purchase.progress.reversed_sessions > 0 && <p className="mt-2 text-xs">{purchase.progress.reversed_sessions} reversed record(s), excluded from progress.</p>}
+        {purchase.progress.is_canceled && <p className="mt-2 text-xs">Cancellation does not settle debt or refund payments.</p>}
+      </article>)}</div>
+    </section>}
 
-      <PageHeader
-        title={`${client.first_name} ${client.last_name}`}
-        subtitle={`Client since ${new Date(client.created_at).toLocaleDateString('en-PH')}`}
-      >
-        <Button variant="secondary" size="sm" onClick={() => setEditClientOpen(true)}>
-          Edit
-        </Button>
-        <Badge variant={client.is_active ? 'success' : 'neutral'}>
-          {client.is_active ? 'Active' : 'Inactive'}
-        </Badge>
-      </PageHeader>
-
-      {/* Summary stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <StatCard label="Treatment Records" value={procedures.length} accent="brand" icon={Stethoscope} />
-        <StatCard label="Total Billed" value={formatCurrency(totalBilled)} accent="info" icon={ShoppingCart} />
-        <StatCard label="Follow-ups" value={followUps.length} accent="neutral" icon={CalendarClock} />
-        <StatCard
-          label="Last Session"
-          value={procedures.length > 0 ? `#${procedures[0].session_number ?? '—'}` : '—'}
-          sub={procedures.length > 0 ? procedures[0].procedure_date : 'No treatment records yet'}
-          accent="neutral"
-          icon={Users}
-        />
-      </div>
-
-      {/* Contact info */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Contact Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-            {client.phone && (
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 shrink-0" style={{ color: 'var(--color-brand)' }} />
-                <span>{client.phone}</span>
-              </div>
-            )}
-            {client.email && (
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 shrink-0" style={{ color: 'var(--color-brand)' }} />
-                <span>{client.email}</span>
-              </div>
-            )}
-            {client.address && (
-              <div className="flex items-start gap-2 sm:col-span-2">
-                <MapPin className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--color-brand)' }} />
-                <span>{client.address}</span>
-              </div>
-            )}
-            {client.notes && (
-              <div className="flex items-start gap-2 sm:col-span-2">
-                <FileText className="h-4 w-4 shrink-0 mt-0.5" style={{ color: 'var(--color-text-muted)' }} />
-                <span style={{ color: 'var(--color-text-muted)' }}>{client.notes}</span>
-              </div>
-            )}
-            {!client.phone && !client.email && !client.address && !client.notes && (
-              <span style={{ color: 'var(--color-text-muted)' }}>No contact information on file.</span>
-            )}
-          </dl>
+    <section aria-label="Client history">
+      <div className="profile-tabs" role="tablist" aria-label="Client history">{TABS.map((label, index) => <button type="button" role="tab" key={label} id={`client-tab-${index}`} aria-selected={tab === index} aria-controls={`client-panel-${index}`} tabIndex={tab === index ? 0 : -1} className="profile-tab" onClick={() => setTab(index)} onKeyDown={(event) => {
+        let next
+        if (event.key === 'ArrowRight') next = (index + 1) % TABS.length
+        else if (event.key === 'ArrowLeft') next = (index + TABS.length - 1) % TABS.length
+        else if (event.key === 'Home') next = 0
+        else if (event.key === 'End') next = TABS.length - 1
+        else return
+        event.preventDefault()
+        setTab(next)
+        document.getElementById(`client-tab-${next}`)?.focus()
+      }}>{label}<span className="profile-tab-count">{[procedures.length, sales.length, followUps.length][index]}</span></button>)}</div>
+      <div id="client-panel-0" role="tabpanel" aria-labelledby="client-tab-0" tabIndex={0} hidden={tab !== 0} className="profile-history-panel">
+      {tab === 0 && <Card>
+        <CardContent className="min-w-0 p-0">
+          <DataTable mobileBreakpoint="lg" columns={['Date', 'Treatment', 'Record status', 'Treatment price', 'Follow-up', 'Supplies', '']} rows={procedures.map((procedure) => [procedure.procedure_date, treatmentName(procedure), <div>{procedure.session_number != null && <p>History #{procedure.session_number}</p>}{treatmentStatus(procedure)}</div>, treatmentPrice(procedure), procedure.next_follow_up ?? '—', `${procedure.supplies_used?.length ?? 0} items`, treatmentAction(procedure)])}
+            mobileRows={procedures.map((procedure) => <MobileCard key={procedure.id} actions={treatmentAction(procedure)}><strong className="wrap-anywhere">{treatmentName(procedure)}</strong><MobileField label="Date" value={procedure.procedure_date} /><MobileField label="History #" value={procedure.session_number} />{treatmentStatus(procedure)}<MobileField label="Treatment price" value={treatmentPrice(procedure)} /><MobileField label="Follow-up" value={procedure.next_follow_up ?? '—'} /><MobileField label="Supply items" value={procedure.supplies_used?.length ?? 0} /></MobileCard>)} emptyState={<EmptyState title="No treatment records" description="Add a treatment from New record." />} />
         </CardContent>
-      </Card>
-
-      {/* Tab strip */}
-      <div className="flex gap-0.5 border-b mb-5 overflow-x-auto" style={{ borderColor: 'var(--color-border)' }}>
-        {TABS.map((t, i) => (
-          <button
-            key={t}
-            onClick={() => setTab(i)}
-            className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
-            style={{
-              borderColor: tab === i ? 'var(--color-brand)' : 'transparent',
-              color: tab === i ? 'var(--color-brand-strong)' : 'var(--color-text-muted)',
-            }}
-          >
-            {t}
-            {i === 0 && procedures.length > 0 && (
-              <span className="ml-1.5 text-xs rounded-full px-1.5 py-0.5"
-                style={{ background: 'var(--color-brand-soft)', color: 'var(--color-brand-strong)' }}>
-                {procedures.length}
-              </span>
-            )}
-          </button>
-        ))}
+      </Card>}
       </div>
+      <div id="client-panel-1" role="tabpanel" aria-labelledby="client-tab-1" tabIndex={0} hidden={tab !== 1} className="profile-history-panel">
+      {tab === 1 && <Card>
+        <CardContent className="min-w-0 p-0">
+          <DataTable mobileBreakpoint="lg" columns={['Sale / date', 'Type / payment status', 'Billed', 'Recorded payments', 'Outstanding', '']} rows={sales.map((sale) => [<div>Sale #{sale.id}<p>{sale.sale_date}</p></div>, <div>{sale.package_service_id ? sale.progress.is_canceled ? 'Canceled package' : 'Treatment package' : 'Ordinary sale'}<p>{sale.payment_status}</p></div>, formatCurrency(sale.financial.total_amount), formatCurrency(sale.financial.total_paid), formatCurrency(sale.financial.remaining_balance), saleAction(sale)])}
+            mobileRows={sales.map((sale) => <MobileCard key={sale.id} actions={saleAction(sale)}><strong>Sale #{sale.id} · {sale.sale_date}</strong><span>{sale.package_service_id ? sale.progress.is_canceled ? 'Canceled package' : 'Treatment package' : 'Ordinary sale'}</span><Badge variant={PAYMENT_STATUS[sale.payment_status] ?? 'neutral'}>Payment: {sale.payment_status}</Badge><MobileField label="Billed" value={formatCurrency(sale.financial.total_amount)} /><MobileField label="Recorded payments" value={formatCurrency(sale.financial.total_paid)} /><MobileField label="Outstanding" value={formatCurrency(sale.financial.remaining_balance)} /></MobileCard>)} emptyState={<EmptyState title="No sales recorded" description="Use New record to add a sale or package." />} />
+        </CardContent>
+      </Card>}
+      </div>
+      <div id="client-panel-2" role="tabpanel" aria-labelledby="client-tab-2" tabIndex={0} hidden={tab !== 2} className="profile-history-panel">
+      {tab === 2 && <Card>
+        <CardHeader className="flex-wrap gap-3"><CardTitle>Follow-ups</CardTitle><Button variant="outline" onClick={() => setFollowUpFormOpen(true)}>Schedule follow-up</Button></CardHeader>
+        <CardContent className="min-w-0 p-0"><DataTable mobileBreakpoint="lg" columns={['Date', 'Status', 'Notes']} rows={followUps.map((followUp) => [followUp.follow_up_date, <Badge variant={FOLLOW_UP_STATUS[followUp.status] ?? 'neutral'}>{followUp.status}</Badge>, <span className="whitespace-pre-wrap wrap-anywhere">{followUp.notes ?? '—'}</span>])}
+          mobileRows={followUps.map((followUp) => <MobileCard key={followUp.id}><MobileField label="Date" value={followUp.follow_up_date} /><Badge variant={FOLLOW_UP_STATUS[followUp.status] ?? 'neutral'}>{followUp.status}</Badge>{followUp.notes && <p className="whitespace-pre-wrap wrap-anywhere">{followUp.notes}</p>}</MobileCard>)} emptyState={<EmptyState title="No follow-ups scheduled" description="Reminders are scheduled separately from treatment dates." />} /><div className="p-4"><Link className="inline-flex min-h-11 items-center" to="/follow-ups">Open follow-up worklist</Link></div></CardContent>
+      </Card>}
+      </div>
+    </section>
 
-      {/* Treatment records tab */}
-      {tab === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Treatment History</CardTitle>
-            <Button size="sm" onClick={openNewProcedure}>
-              <Plus className="h-4 w-4" /> Add Treatment Record
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataTable
-              columns={['Date', 'Treatment or Service', 'Session', 'Price', 'Follow-up', 'Supplies', '']}
-              rows={procedures.map((p) => [
-                <span className="font-medium whitespace-nowrap">{p.procedure_date}</span>,
-                <span>{serviceMap[p.service_id] ?? `Treatment / Service #${p.service_id}`}</span>,
-                <span>{p.session_number ?? '—'}</span>,
-                <span>{p.price != null ? formatCurrency(p.price) : '—'}</span>,
-                <span style={{ color: 'var(--color-text-muted)' }}>{p.next_follow_up ?? '—'}</span>,
-                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>
-                  {(p.supplies_used?.length ?? 0)} item{(p.supplies_used?.length ?? 0) !== 1 ? 's' : ''}
-                </span>,
-                <Button variant="ghost" size="sm" onClick={() => openEditProcedure(p)}>Edit</Button>,
-              ])}
-              emptyState={
-                <EmptyState
-                  icon={Stethoscope}
-                  title="No treatment records yet"
-                  description="Record the first treatment for this client."
-                >
-                  <Button size="sm" onClick={openNewProcedure}>
-                    <Plus className="h-4 w-4" /> Add Treatment Record
-                  </Button>
-                </EmptyState>
-              }
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Sales & Payments tab */}
-      {tab === 1 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Sales &amp; Payments</CardTitle>
-            <Button size="sm" onClick={() => setSaleFormOpen(true)}>
-              <Plus className="h-4 w-4" /> Add Sale
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataTable
-              columns={['Date', 'Total', 'Status', '']}
-              rows={sales.map((s) => [
-                <span className="font-medium whitespace-nowrap">{s.sale_date}</span>,
-                <span className="font-semibold">{formatCurrency(s.total_amount)}</span>,
-                <Badge variant={PAYMENT_STATUS[s.payment_status] ?? 'neutral'}>
-                  {s.payment_status}
-                </Badge>,
-                <Button variant="ghost" size="sm" asChild>
-                  <Link to={`/sales/${s.id}`}>Detail</Link>
-                </Button>,
-              ])}
-              emptyState={
-                <EmptyState
-                  icon={ShoppingCart}
-                  title="No sales yet"
-                  description="Record a sale transaction for this client."
-                >
-                  <Button size="sm" onClick={() => setSaleFormOpen(true)}>
-                    <Plus className="h-4 w-4" /> Add Sale
-                  </Button>
-                </EmptyState>
-              }
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Follow-ups tab */}
-      {tab === 2 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Follow-ups</CardTitle>
-            <Button size="sm" onClick={() => setFollowUpFormOpen(true)}>
-              <Plus className="h-4 w-4" /> Add Follow-up
-            </Button>
-          </CardHeader>
-          <CardContent className="p-0">
-            <DataTable
-              columns={['Date', 'Status', 'Notes']}
-              rows={followUps.map((f) => [
-                <span className="font-medium whitespace-nowrap">{f.follow_up_date}</span>,
-                <Badge variant={FOLLOW_UP_STATUS[f.status] ?? 'neutral'}>{f.status}</Badge>,
-                <span className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{f.notes ?? '—'}</span>,
-              ])}
-              emptyState={
-                <EmptyState
-                  icon={CalendarClock}
-                  title="No follow-ups scheduled"
-                  description="Schedule a follow-up visit for this client."
-                >
-                  <Button size="sm" onClick={() => setFollowUpFormOpen(true)}>
-                    <Plus className="h-4 w-4" /> Add Follow-up
-                  </Button>
-                </EmptyState>
-              }
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Modals */}
-      <ClientForm
-        open={editClientOpen}
-        onClose={() => setEditClientOpen(false)}
-        client={client}
-        onSaved={(updated) => { setClient(updated); setEditClientOpen(false) }}
-      />
-
-      <ProcedureForm
-        open={procedureFormOpen}
-        onClose={() => { setProcedureFormOpen(false); setEditingProcedure(null) }}
-        procedure={editingProcedure}
-        defaultClientId={editingProcedure ? null : Number(id)}
-        existingProcedures={procedures}
-        serviceMap={editingProcedure ? serviceMap : null}
-        onSaved={() => {
-          setProcedureFormOpen(false)
-          setEditingProcedure(null)
-          loadAll()
-          setTab(0)
-        }}
-      />
-
-      <FollowUpForm
-        open={followUpFormOpen}
-        onClose={() => setFollowUpFormOpen(false)}
-        defaultClientId={Number(id)}
-        onSaved={() => { loadAll(); setFollowUpFormOpen(false); setTab(2) }}
-      />
-
-      <SaleForm
-        open={saleFormOpen}
-        onClose={() => setSaleFormOpen(false)}
-        defaultClientId={Number(id)}
-        onSaved={() => { setSaleFormOpen(false); loadAll(); setTab(1) }}
-      />
-    </div>
-  )
+    <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}><DialogContent><DialogHeader><DialogTitle>Client details</DialogTitle><DialogDescription>{clientName} · Client #{client.id}</DialogDescription></DialogHeader><DialogBody><dl className="profile-details">{[['Phone', client.phone], ['Email', client.email], ['Address', client.address], ['Registered', new Date(client.created_at).toLocaleDateString('en-PH')]].map(([label, value]) => <div key={label}><dt>{label}</dt><dd className="whitespace-pre-wrap wrap-anywhere">{value || 'Not recorded'}</dd></div>)}</dl></DialogBody></DialogContent></Dialog>
+    {paymentChoiceOpen && <FormDialog open onClose={() => setPaymentChoiceOpen(false)} title="Choose sale for payment" description={`${clientName} · Client #${client.id}. Each payment belongs to one sale.`} submitLabel="Continue to payment" submitDisabled={!selectedPayment} onSubmit={(event) => { event.preventDefault(); if (selectedPayment) { setPaymentChoiceOpen(false); setPaymentSale(selectedPayment) } }}>
+      <FormField label="Sale receiving payment" required><select aria-label="Sale receiving payment" className="min-h-11 w-full min-w-0 rounded-md border p-2" value={paymentChoice} onChange={(event) => setPaymentChoice(event.target.value)}><option value="">Select a specific sale</option>{payableSales.map((sale) => <option key={sale.id} value={sale.id}>Sale #{sale.id} · {sale.sale_date} · {formatCurrency(sale.financial.remaining_balance)} outstanding{sale.progress?.is_canceled ? ' · Canceled package' : ''}</option>)}</select></FormField>
+      {selectedPayment && <div className="space-y-2 text-sm wrap-anywhere"><p>Sale #{selectedPayment.id} · {selectedPayment.items.map((item) => item.description).join(', ')}</p><p>Billed {formatCurrency(selectedPayment.financial.total_amount)} · Recorded payments {formatCurrency(selectedPayment.financial.total_paid)} · Outstanding {formatCurrency(selectedPayment.financial.remaining_balance)}</p></div>}
+    </FormDialog>}
+    {paymentSale && <PaymentForm key={paymentSale.id} open saleId={paymentSale.id} context={`${clientName} · Client #${client.id} · Sale #${paymentSale.id}`} remainingBalance={Number(paymentSale.financial.remaining_balance)} onClose={() => setPaymentSale(null)} onSaved={() => { setPaymentSale(null); setTab(1); refresh() }} />}
+    {archiveOpen && <FormDialog open onClose={() => setArchiveOpen(false)} title="Archive client?" description={`${clientName} · Client #${client.id}`} submitting={archiving} submitLabel="Archive client" error={archiveError} onSubmit={async (event) => {
+      event.preventDefault()
+      if (archiving) return
+      setArchiving(true)
+      setArchiveError(null)
+      try { await clientsService.deactivate(client.id); navigate('/clients', { replace: true }) }
+      catch (error) { setArchiveError(error.message) }
+      finally { setArchiving(false) }
+    }}><p className="text-sm">Removes this client from active lists. Sales, payments, treatment history and outstanding balances remain recorded.</p></FormDialog>}
+    <ClientForm open={editClientOpen} onClose={() => setEditClientOpen(false)} client={client} onSaved={() => { setEditClientOpen(false); refresh() }} />
+    <ProcedureForm open={procedureFormOpen} onClose={() => { setProcedureFormOpen(false); setEditingProcedure(null) }} procedure={editingProcedure} defaultClientId={editingProcedure ? null : Number(id)} serviceMap={editingProcedure ? serviceMap : null} clientName={clientName} onSaved={() => { setProcedureFormOpen(false); setEditingProcedure(null); setTab(0); refresh() }} />
+    <FollowUpForm clientContext={`${clientName} · Client #${client.id}`} open={followUpFormOpen} onClose={() => setFollowUpFormOpen(false)} defaultClientId={Number(id)} onSaved={() => { setFollowUpFormOpen(false); setTab(2); refresh() }} />
+    <SaleForm clientContext={`${clientName} · Client #${client.id}`} open={saleFormOpen} onClose={() => setSaleFormOpen(false)} defaultClientId={Number(id)} onSaved={() => { setSaleFormOpen(false); setTab(1); refresh() }} />
+  </div>
 }

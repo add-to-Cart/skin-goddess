@@ -14,6 +14,16 @@ use Illuminate\Support\Carbon;
  * @property int $service_id
  * @property Carbon $procedure_date
  * @property int|null $session_number
+ * @property int|null $package_sale_id
+ * @property string|null $completion_key
+ * @property string|null $completion_fingerprint
+ * @property int|null $completed_by_user_id
+ * @property Carbon|null $reversed_at
+ * @property int|null $reversed_by_user_id
+ * @property string|null $reversal_reason
+ * @property-read ClinicUser|null $reversed_by
+ * @property-read ClinicUser|null $completed_by
+ * @property-read Sale|null $package_sale
  * @property string|null $price
  * @property Carbon|null $next_follow_up
  * @property string|null $notes
@@ -39,11 +49,17 @@ class Procedure extends Model
         'notes',
     ];
 
+    protected $hidden = ['completion_fingerprint'];
+
     /** @return array<string, string> */
     protected function casts(): array
     {
         return [
             'procedure_date' => 'date:Y-m-d',
+            'package_sale_id' => 'integer',
+            'completed_by_user_id' => 'integer',
+            'reversed_at' => 'datetime',
+            'reversed_by_user_id' => 'integer',
             'price' => 'decimal:2',
             'next_follow_up' => 'date:Y-m-d',
             'created_at' => 'datetime',
@@ -79,5 +95,23 @@ class Procedure extends Model
     public function sale_items(): HasMany
     {
         return $this->hasMany(SaleItem::class, 'procedure_id');
+    }
+
+    /** @return BelongsTo<Sale, $this> */
+    public function package_sale(): BelongsTo
+    {
+        return $this->belongsTo(Sale::class, 'package_sale_id');
+    }
+
+    /** @return BelongsTo<ClinicUser, $this> */
+    public function completed_by(): BelongsTo
+    {
+        return $this->belongsTo(ClinicUser::class, 'completed_by_user_id');
+    }
+
+    /** @return BelongsTo<ClinicUser, $this> */
+    public function reversed_by(): BelongsTo
+    {
+        return $this->belongsTo(ClinicUser::class, 'reversed_by_user_id');
     }
 }

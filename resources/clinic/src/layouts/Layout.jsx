@@ -8,7 +8,7 @@ import SidebarContent from './Sidebar'
 export default function Layout() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   useEffect(() => {
-    const desktop = window.matchMedia('(min-width: 1024px)')
+    const desktop = window.matchMedia('(min-width: 1280px)')
     const closeOnDesktop = () => { if (desktop.matches) setDrawerOpen(false) }
     const closeOnHistory = () => setDrawerOpen(false)
     desktop.addEventListener('change', closeOnDesktop)

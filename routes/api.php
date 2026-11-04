@@ -20,7 +20,9 @@ Route::middleware(ClinicAuthentication::class)->group(function (): void {
     Route::get('auth/me', [ClinicAuthController::class, 'me']);
     Route::post('auth/logout', [ClinicAuthController::class, 'logout']);
     Route::get('dashboard', [DashboardController::class, 'index']);
-    Route::apiResource('clients', ClientController::class);
+    Route::get('clients/lookup', [ClientController::class, 'lookup']);
+    Route::apiResource('clients', ClientController::class)->except('destroy');
+    Route::get('services/lookup', [ServiceController::class, 'lookup']);
     Route::apiResource('services', ServiceController::class)->except('destroy');
     Route::get('follow-ups/upcoming', [FollowUpController::class, 'upcoming']);
     Route::get('follow-ups/overdue', [FollowUpController::class, 'overdue']);
@@ -28,6 +30,7 @@ Route::middleware(ClinicAuthentication::class)->group(function (): void {
     Route::apiResource('procedures', ProcedureController::class)->except('destroy');
     Route::post('procedures/{id}/supplies', [ProcedureController::class, 'addSupply']);
     Route::delete('procedures/{id}/supplies/{supplyId}', [ProcedureController::class, 'removeSupply']);
+    Route::get('inventory/items/lookup', [InventoryController::class, 'lookup']);
     Route::apiResource('inventory/items', InventoryController::class)->except('destroy');
     Route::post('inventory/items/{id}/adjust', [InventoryController::class, 'adjust']);
     Route::get('inventory/items/{id}/history', [InventoryController::class, 'history']);
@@ -38,6 +41,8 @@ Route::middleware(ClinicAuthentication::class)->group(function (): void {
     Route::apiResource('sales', SaleController::class)->except(['destroy', 'update']);
     Route::get('sales/{id}/corrections', [SaleController::class, 'corrections']);
     Route::get('sales/{id}/summary', [SaleController::class, 'summary']);
+    Route::get('sales/{id}/sessions', [SaleController::class, 'sessions']);
+    Route::post('sales/{id}/sessions', [ProcedureController::class, 'completePackage']);
     Route::get('sales/{id}/invoice', [InvoiceController::class, 'download']);
     Route::post('sales/{id}/send-invoice', [InvoiceController::class, 'send']);
     Route::get('payments/sale/{id}', [PaymentController::class, 'history']);
@@ -47,7 +52,10 @@ Route::middleware(ClinicAuthentication::class)->group(function (): void {
     Route::match(['patch', 'delete'], 'payments/{id}', [PaymentController::class, 'immutable']);
 });
 Route::middleware(ClinicAuthentication::class.':admin')->group(function (): void {
+    Route::delete('clients/{id}', [ClientController::class, 'destroy']);
     Route::match(['put', 'patch'], 'sales/{id}', [SaleController::class, 'update']);
+    Route::post('sales/{id}/cancel-package', [SaleController::class, 'cancelPackage']);
+    Route::post('sales/{id}/sessions/{procedureId}/reverse', [ProcedureController::class, 'reversePackage']);
     Route::apiResource('auth/users', ClinicAuthController::class)->except('show');
     Route::apiResource('expenses', ExpenseController::class);
     Route::post('payments/{id}/void', [PaymentController::class, 'void']);

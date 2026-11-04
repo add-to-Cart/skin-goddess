@@ -11,7 +11,19 @@ class FollowUpController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $request->validate(['search' => 'nullable|string|max:100', 'paginated' => 'sometimes|boolean', 'cursor' => 'nullable|string|max:2000']);
         $query = FollowUp::query();
+        if ($search = trim($request->string('search')->toString())) {
+            $query->where(function ($matches) use ($search): void {
+                $matches->whereHas('client', fn ($client) => $client->matchingSearch($search));
+                if (preg_match('/^#?(\d+)$/', $search, $id)) {
+                    $matches->orWhere('id', $id[1]);
+                }
+            });
+        }
+        if ($request->boolean('include_client')) {
+            $query->with('client:id,first_name,last_name,is_active');
+        }
         foreach (['client_id', 'status'] as $field) {
             if ($request->filled($field)) {
                 $query->where($field, $request->input($field));
@@ -24,7 +36,14 @@ class FollowUpController extends Controller
             $query->whereDate('follow_up_date', '<=', $to);
         }
 
-        return response()->json($query->orderBy('follow_up_date')->orderBy('id')->get());
+        if ($request->boolean('paginated')) {
+            $query->select('follow_ups.*')->selectRaw('follow_up_date as cursor_date')->orderBy('cursor_date');
+        } else {
+            $query->orderBy('follow_up_date');
+        }
+        $query->orderBy('id');
+
+        return response()->json($request->boolean('paginated') ? $query->cursorPaginate(25) : $query->get());
     }
 
     public function upcoming(Request $request): JsonResponse
@@ -34,9 +53,11 @@ class FollowUpController extends Controller
         return response()->json(FollowUp::whereIn('status', ['upcoming', 'due'])->whereBetween('follow_up_date', [today(config('clinic.timezone'))->toDateString(), today(config('clinic.timezone'))->addDays($data['days_ahead'] ?? 7)->toDateString()])->orderBy('follow_up_date')->get());
     }
 
-    public function overdue(): JsonResponse
+    public function overdue(Request $request): JsonResponse
     {
-        return response()->json(FollowUp::whereIn('status', ['upcoming', 'due'])->whereDate('follow_up_date', '<', today(config('clinic.timezone')))->orderBy('follow_up_date')->get());
+        $query = FollowUp::whereIn('status', ['upcoming', 'due'])->whereDate('follow_up_date', '<', today(config('clinic.timezone')));
+
+        return response()->json($request->boolean('count_only') ? ['count' => $query->count()] : $query->orderBy('follow_up_date')->get());
     }
 
     public function show(int $id): JsonResponse

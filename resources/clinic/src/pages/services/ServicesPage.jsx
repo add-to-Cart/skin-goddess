@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Search, Stethoscope, Plus } from 'lucide-react'
+import { Search, Stethoscope, Plus, Pencil } from 'lucide-react'
 import servicesService from '@/services/servicesService'
 import { formatCurrency } from '@/lib/utils'
 import PageHeader from '@/components/shared/PageHeader'
@@ -90,7 +90,6 @@ function ServiceForm({ open, onClose, service = null, onSaved }) {
       open={open}
       onClose={onClose}
       title={isEdit ? 'Edit Treatment or Service' : 'Add Treatment or Service'}
-      description="This catalog defines what the clinic offers. It does not change completed treatment records."
       onSubmit={handleSubmit}
       submitting={submitting}
       submitLabel={isEdit ? 'Save Changes' : 'Add Treatment or Service'}
@@ -100,7 +99,6 @@ function ServiceForm({ open, onClose, service = null, onSaved }) {
         <Input
           value={fields.name}
           onChange={(e) => set('name', e.target.value)}
-          placeholder="e.g. Facial Treatment, Laser Hair Removal"
           autoFocus
         />
       </FormField>
@@ -114,10 +112,9 @@ function ServiceForm({ open, onClose, service = null, onSaved }) {
           }}
           value={fields.description}
           onChange={(e) => set('description', e.target.value)}
-          placeholder="Optional description…"
         />
       </FormField>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField label="Default Price (₱)" error={errors.default_price}
           hint="Used as a starting price for new treatment records.">
           <Input
@@ -126,7 +123,6 @@ function ServiceForm({ open, onClose, service = null, onSaved }) {
             step="0.01"
             value={fields.default_price}
             onChange={(e) => set('default_price', e.target.value)}
-            placeholder="0.00"
           />
         </FormField>
         <FormField label="Duration (minutes)" error={errors.duration_minutes}>
@@ -136,7 +132,6 @@ function ServiceForm({ open, onClose, service = null, onSaved }) {
             step="1"
             value={fields.duration_minutes}
             onChange={(e) => set('duration_minutes', e.target.value)}
-            placeholder="60"
           />
         </FormField>
       </div>
@@ -201,8 +196,8 @@ export default function ServicesPage() {
       <div className="flex items-center gap-4 mb-5 flex-wrap">
         <div className="relative w-full sm:w-80">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" style={{ color: 'var(--color-text-muted)' }} />
-          <Input value={search} onChange={(event) => setSearch(event.target.value)}
-            className="pl-9" placeholder="Search treatments and services…" />
+          <Input aria-label="Search treatments and services" title="Search treatments and services" value={search} onChange={(event) => setSearch(event.target.value)}
+            className="pl-9" />
         </div>
         <div className="flex items-center gap-2">
           <Checkbox id="show-inactive-svc" checked={showAll} onCheckedChange={setShowAll} />
@@ -236,7 +231,7 @@ export default function ServicesPage() {
               {svc.is_active ? 'Active' : 'Inactive'}
             </Badge>,
             <div className="flex gap-1">
-              <Button variant="ghost" size="sm" onClick={() => openEdit(svc)}>Edit</Button>
+              <Button variant="ghost" size="icon" aria-label={`Edit ${svc.name}`} title={`Edit ${svc.name}`} onClick={() => openEdit(svc)}><Pencil aria-hidden="true" /></Button>
               <Button
                 variant="ghost"
                 size="sm"
@@ -252,7 +247,7 @@ export default function ServicesPage() {
               key={svc.id}
               actions={
                 <>
-                  <Button variant="ghost" size="sm" onClick={() => openEdit(svc)}>Edit</Button>
+                  <Button variant="ghost" size="icon" aria-label={`Edit ${svc.name}`} title={`Edit ${svc.name}`} onClick={() => openEdit(svc)}><Pencil aria-hidden="true" /></Button>
                   <Button
                     variant="ghost"
                     size="sm"

@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -44,6 +46,36 @@ class Client extends Model
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
+    }
+
+    /** @param Builder<Client> $query */
+    public function scopeMatchingSearch(Builder $query, string $search): void
+    {
+        $search = Str::squish($search);
+        if ($search === '') {
+            return;
+        }
+        $query->where(function (Builder $matches) use ($search): void {
+            $matches->where(function (Builder $name) use ($search): void {
+                foreach (explode(' ', $search) as $term) {
+                    $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], Str::lower($term)).'%';
+                    $name->where(function (Builder $part) use ($pattern): void {
+                        foreach (['first_name', 'last_name', 'phone', 'email'] as $column) {
+                            $part->orWhereRaw("LOWER({$column}) LIKE ? ESCAPE '!'", [$pattern]);
+                        }
+                    });
+                }
+            });
+            if (preg_match('/^#?(\d+)$/', $search, $id)) {
+                $matches->orWhere('id', $id[1]);
+            }
+            if (preg_match('/^[+()\d\s-]+$/', $search)) {
+                $digits = preg_replace('/\D/', '', $search);
+                if ($digits !== '') {
+                    $matches->orWhereRaw("REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(phone, ' ', ''), '-', ''), '(', ''), ')', ''), '+', '') LIKE ?", ['%'.$digits.'%']);
+                }
+            }
+        });
     }
 
     /** @return HasMany<Procedure, $this> */

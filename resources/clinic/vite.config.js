@@ -45,6 +45,7 @@ export default defineConfig({
   server: {
     strictPort: true,
     proxy: {
+      '/sg-bg-brand.png': { target: 'http://skin-goddess', changeOrigin: true },
       '/app-logo.png': { target: 'http://skin-goddess', changeOrigin: true },
       '/skin-goddess.ico': { target: 'http://skin-goddess', changeOrigin: true },
       '/api': {

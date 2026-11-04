@@ -30,7 +30,7 @@ function newPaymentRequestKey() {
  *   saleId            — number (required)
  *   remainingBalance  — number — used to warn if overpaying
  */
-export default function PaymentForm({ open, onClose, onSaved, saleId, remainingBalance = null }) {
+export default function PaymentForm({ open, onClose, onSaved, saleId, remainingBalance = null, context = '' }) {
   const [amount, setAmount]         = useState('')
   const [method, setMethod]         = useState('cash')
   const [date, setDate]             = useState(todayISO())
@@ -71,6 +71,7 @@ export default function PaymentForm({ open, onClose, onSaved, saleId, remainingB
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (submitting) return
     const v = validate()
     if (Object.keys(v).length) { setErrors(v); return }
 
@@ -107,14 +108,15 @@ export default function PaymentForm({ open, onClose, onSaved, saleId, remainingB
       title="Record Payment"
       description={
         remainingBalance !== null
-          ? `Remaining balance: ${formatCurrency(remainingBalance)}`
-          : undefined
+          ? `${context ? `${context}. ` : ''}Remaining balance: ${formatCurrency(remainingBalance)}`
+          : context || undefined
       }
       onSubmit={handleSubmit}
       submitting={submitting}
       submitLabel="Record Payment"
       error={apiError}
     >
+      <p className="text-sm">After an uncertain save, review this sale’s payment history before closing and starting a new payment.</p>
       <FormField label="Amount (₱)" required error={errors.amount}>
         <Input
           type="number"
@@ -122,7 +124,6 @@ export default function PaymentForm({ open, onClose, onSaved, saleId, remainingB
           step="0.01"
           value={amount}
           onChange={(e) => { setAmount(e.target.value); if (errors.amount) setErrors((er) => ({ ...er, amount: null })) }}
-          placeholder="0.00"
           autoFocus
         />
         {wouldOverpay && !errors.amount && (
@@ -150,11 +151,10 @@ export default function PaymentForm({ open, onClose, onSaved, saleId, remainingB
       </FormField>
 
       {['gcash', 'bank_transfer', 'card'].includes(method) && (
-        <FormField label="Transaction Reference" required error={errors.referenceNumber}>
+        <FormField label="Transaction Reference" hint="Use the payment provider or terminal reference." required error={errors.referenceNumber}>
           <Input
             value={referenceNumber}
             onChange={(e) => { setReferenceNumber(e.target.value); if (errors.referenceNumber) setErrors((er) => ({ ...er, referenceNumber: null })) }}
-            placeholder="Reference or terminal number"
           />
         </FormField>
       )}
@@ -163,7 +163,6 @@ export default function PaymentForm({ open, onClose, onSaved, saleId, remainingB
         <Input
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Optional notes…"
         />
       </FormField>
     </FormDialog>

@@ -1,3 +1,7 @@
+import { Children, cloneElement, isValidElement, useId } from 'react'
+import { Input } from '@/components/ui/input'
+import { SelectTrigger } from '@/components/ui/select'
+import SearchSelect from './SearchSelect'
 import {
   Dialog,
   DialogContent,
@@ -32,6 +36,7 @@ export default function FormDialog({
   description,
   onSubmit,
   submitting = false,
+  submitDisabled = false,
   submitLabel = 'Save',
   error = null,
   children,
@@ -41,14 +46,16 @@ export default function FormDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          {description && <DialogDescription>{description}</DialogDescription>}
+          {description && <DialogDescription className="wrap-anywhere">{description}</DialogDescription>}
         </DialogHeader>
-        <form onSubmit={onSubmit} noValidate>
+        <form onSubmit={onSubmit} noValidate aria-busy={submitting}>
+          <fieldset disabled={submitting} className="min-w-0 border-0 p-0 m-0">
           <DialogBody className="flex flex-col gap-4">
             {error && <ErrorState message={error} />}
             {children}
           </DialogBody>
-          <DialogFooter>
+          </fieldset>
+          <DialogFooter className="flex-col-reverse sm:flex-row [&_button]:min-h-11 [&_button]:w-full [&_button]:whitespace-normal sm:[&_button]:w-auto">
             <Button
               type="button"
               variant="ghost"
@@ -57,7 +64,7 @@ export default function FormDialog({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={submitting}>
+            <Button type="submit" disabled={submitting || submitDisabled}>
               {submitting ? 'Saving…' : submitLabel}
             </Button>
           </DialogFooter>
@@ -78,20 +85,48 @@ export default function FormDialog({
  *   children — the input element
  */
 export function FormField({ label, required = false, error = null, hint = null, children }) {
+  const generatedId = useId()
+  function findControlId(nodes) {
+    for (const child of Children.toArray(nodes)) {
+      if (!isValidElement(child)) continue
+      if ((['input', 'textarea', 'select'].includes(child.type) || child.type === Input || child.type === SelectTrigger || child.type === SearchSelect) && child.props.id) return child.props.id
+      const nestedId = child.props.children && findControlId(child.props.children)
+      if (nestedId) return nestedId
+    }
+    return null
+  }
+  const fieldId = findControlId(children) || generatedId
+  const labelId = `${fieldId}-label`
+  const messageId = `${fieldId}-message`
+  function associateControl(nodes) {
+    return Children.map(nodes, (child) => {
+      if (!isValidElement(child)) return child
+      if (['input', 'textarea', 'select'].includes(child.type) || child.type === Input || child.type === SelectTrigger || child.type === SearchSelect) {
+        return cloneElement(child, {
+          id: child.props.id || fieldId,
+          'aria-labelledby': [child.props['aria-labelledby'], labelId].filter(Boolean).join(' '),
+          'aria-describedby': [child.props['aria-describedby'], (error || hint) && messageId].filter(Boolean).join(' ') || undefined,
+          'aria-invalid': error ? true : child.props['aria-invalid'],
+          'aria-required': required || child.props['aria-required'] || undefined,
+        })
+      }
+      return child.props.children ? cloneElement(child, { children: associateControl(child.props.children) }) : child
+    })
+  }
   return (
-    <div className="flex flex-col gap-1.5">
-      <Label>
+    <div className="flex min-w-0 flex-col gap-1.5">
+      <Label id={labelId} htmlFor={fieldId}>
         {label}
         {required && (
           <span className="ml-1 text-xs" style={{ color: 'var(--color-danger)' }}>*</span>
         )}
       </Label>
-      {children}
+      {associateControl(children)}
       {hint && !error && (
-        <p className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{hint}</p>
+        <p id={messageId} className="text-xs" style={{ color: 'var(--color-text-muted)' }}>{hint}</p>
       )}
       {error && (
-        <p className="text-xs font-medium" style={{ color: 'var(--color-danger)' }} role="alert">
+        <p id={messageId} className="text-xs font-medium" style={{ color: 'var(--color-danger)' }} role="alert">
           {error}
         </p>
       )}

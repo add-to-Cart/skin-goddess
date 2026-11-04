@@ -15,6 +15,19 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
+    public function lookup(Request $request): JsonResponse
+    {
+        $data = $request->validate(['search' => 'nullable|string|max:100']);
+        $search = trim($data['search'] ?? '');
+        if ($search === '') {
+            return response()->json(['data' => [], 'has_more' => false]);
+        }
+        $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_strtolower($search)).'%';
+        $items = InventoryItem::where('is_active', true)->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$pattern])->select(['id', 'name', 'current_quantity', 'unit'])->orderBy('name')->orderBy('id')->limit(21)->get();
+
+        return response()->json(['data' => $items->take(20)->values(), 'has_more' => $items->count() > 20]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = InventoryItem::query();

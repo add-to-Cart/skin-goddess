@@ -29,7 +29,14 @@ async function request(method, path, body = undefined) {
     throw new Error('Session expired. Please log in again.')
   }
 
-  const data = await response.json()
+  let data
+  try {
+    data = await response.json()
+  } catch {
+    const error = new Error('The server response could not be confirmed. Please retry when the connection is available.')
+    error.status = response.status
+    throw error
+  }
 
   if (!response.ok) {
     const message =
@@ -38,7 +45,11 @@ async function request(method, path, body = undefined) {
         : Array.isArray(data?.detail)
           ? data.detail.map((e) => e.msg).join(', ')
           : `Request failed: ${response.status}`
-    throw new Error(message)
+    const error = new Error(message)
+    error.status = response.status
+    error.errors = data?.errors
+    error.existingClient = data?.existing_client
+    throw error
   }
 
   return data

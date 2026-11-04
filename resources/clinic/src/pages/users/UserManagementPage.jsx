@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { UserCog, Plus, KeyRound, ShieldCheck, ShieldOff, Trash2 } from 'lucide-react'
+import { UserCog, Plus, Pencil, ShieldCheck, ShieldOff, Trash2 } from 'lucide-react'
 import usersService from '@/services/usersService'
 import authService from '@/services/authService'
 import PageHeader from '@/components/shared/PageHeader'
@@ -193,17 +193,18 @@ export default function UserManagementPage() {
                   variant="ghost"
                   size="sm"
                   onClick={() => openEdit(u)}
-                  title="Edit user"
+                  title={`Edit ${u.username}`}
+                  aria-label={`Edit ${u.username}`}
                 >
-                  <KeyRound className="h-3.5 w-3.5" />
-                  Edit
+                  <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                 </Button>
                 {!isSelf && (
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDelete(u)}
-                    title="Delete user"
+                    title={`Deactivate ${u.username}`}
+                    aria-label={`Deactivate ${u.username}`}
                     style={{ color: 'var(--color-danger)' }}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -219,11 +220,11 @@ export default function UserManagementPage() {
                 key={u.id}
                 actions={
                   <div className="flex gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => openEdit(u)}>
-                      <KeyRound className="h-3.5 w-3.5" /> Edit
+                    <Button variant="ghost" size="icon" title={`Edit ${u.username}`} aria-label={`Edit ${u.username}`} onClick={() => openEdit(u)}>
+                      <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                     </Button>
                     {!isSelf && (
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(u)}
+                      <Button variant="ghost" size="icon" title={`Deactivate ${u.username}`} aria-label={`Deactivate ${u.username}`} onClick={() => handleDelete(u)}
                         style={{ color: 'var(--color-danger)' }}>
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -260,7 +261,6 @@ export default function UserManagementPage() {
         <FormField label="Username" required>
           <Input
             autoFocus
-            placeholder="e.g. staff_jane"
             value={createForm.username}
             onChange={(e) => setCreateForm(f => ({ ...f, username: e.target.value }))}
           />
@@ -269,7 +269,6 @@ export default function UserManagementPage() {
         <FormField label="Password" required hint="Minimum 6 characters.">
           <Input
             type="password"
-            placeholder="••••••••"
             value={createForm.password}
             onChange={(e) => setCreateForm(f => ({ ...f, password: e.target.value }))}
           />
@@ -353,7 +352,6 @@ export default function UserManagementPage() {
         >
           <Input
             type="password"
-            placeholder="••••••••"
             value={editForm.password}
             onChange={(e) => setEditForm(f => ({ ...f, password: e.target.value }))}
           />

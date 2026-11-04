@@ -1,10 +1,11 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Download, Mail, Plus } from 'lucide-react'
 import paymentsService from '@/services/paymentsService'
 import salesService from '@/services/salesService'
 import invoiceService from '@/services/invoiceService'
 import clientsService from '@/services/clientsService'
+import servicesService from '@/services/servicesService'
 import authService from '@/services/authService'
 import { formatCurrency } from '@/lib/utils'
 import PageHeader from '@/components/shared/PageHeader'
@@ -12,7 +13,7 @@ import StatCard from '@/components/shared/StatCard'
 import LoadingState from '@/components/shared/LoadingState'
 import ErrorState from '@/components/shared/ErrorState'
 import EmptyState from '@/components/shared/EmptyState'
-import { DataTable } from '@/components/shared/DataTable'
+import { DataTable, MobileCard, MobileField } from '@/components/shared/DataTable'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -24,6 +25,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import PaymentForm from './PaymentForm'
 import SaleForm from './SaleForm'
+import PackageSessions from './PackageSessions'
 import FormDialog, { FormField } from '@/components/shared/FormDialog'
 
 const STATUS_VARIANT = { paid: 'success', partial: 'warning', unpaid: 'danger' }
@@ -90,7 +92,6 @@ function SendInvoiceDialog({ open, onClose, saleId, clientEmail, invoiceNumber }
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="client@example.com"
                   required
                   aria-describedby="invoice-email-hint"
                 />
@@ -119,7 +120,7 @@ function SendInvoiceDialog({ open, onClose, saleId, clientEmail, invoiceNumber }
   )
 }
 
-function VoidPaymentDialog({ payment, onClose, onSaved }) {
+function VoidPaymentDialog({ payment, clientContext, saleId, onClose, onSaved }) {
   const [reason, setReason] = useState('')
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -152,8 +153,9 @@ function VoidPaymentDialog({ payment, onClose, onSaved }) {
       submitLabel="Void Payment"
       error={error}
     >
+      <p className="text-sm wrap-anywhere">{clientContext} · Sale #{saleId} · {payment.receipt_number} · {formatCurrency(payment.amount)}</p>
       <FormField label="Void Reason" required>
-        <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="For example: duplicate GCash entry" autoFocus />
+        <Input value={reason} onChange={(e) => setReason(e.target.value)} autoFocus />
       </FormField>
     </FormDialog>
   )
@@ -167,7 +169,9 @@ export default function SaleDetailPage() {
 
   const [sale, setSale]               = useState(null)
   const [history, setHistory]         = useState(null)
-  const [clientEmail, setClientEmail] = useState('')
+  const [client, setClient] = useState(null)
+  const [clientError, setClientError] = useState(null)
+  const loadVersion = useRef(0)
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState(null)
   const [downloading, setDownloading] = useState(false)
@@ -177,29 +181,41 @@ export default function SaleDetailPage() {
   const [voidingPayment, setVoidingPayment] = useState(null)
   const [correctionOpen, setCorrectionOpen] = useState(false)
   const [corrections, setCorrections] = useState([])
+  const [packageProgress, setPackageProgress] = useState(null)
+  const [packageTreatment, setPackageTreatment] = useState(null)
   const isAdmin = authService.isAdmin()
 
   const loadData = useCallback(() => {
+    const version = ++loadVersion.current
     setLoading(true)
     setError(null)
+    setClient(null)
+    setClientError(null)
     Promise.all([
       salesService.getById(id),
       paymentsService.getHistoryBySale(id),
       salesService.getCorrections(id),
     ])
-      .then(([s, h, revisions]) => {
+      .then(async ([s, h, revisions]) => {
+        if (version !== loadVersion.current) return
+        if (s.package_service_id) {
+          const [progress, treatment] = await Promise.all([salesService.getSessions(id), servicesService.getById(s.package_service_id)])
+          if (version !== loadVersion.current) return
+          setPackageProgress(progress)
+          setPackageTreatment(treatment)
+        } else { setPackageProgress(null); setPackageTreatment(null) }
         setSale(s)
         setHistory(h)
         setCorrections(revisions)
         return clientsService.getById(s.client_id)
-          .then((c) => { if (c?.email) setClientEmail(c.email) })
-          .catch(() => null)
+          .then((c) => { if (version === loadVersion.current) setClient(c) })
+          .catch((error) => { if (version === loadVersion.current) setClientError(error.message) })
       })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false))
+      .catch((e) => { if (version === loadVersion.current) setError(e.message) })
+      .finally(() => { if (version === loadVersion.current) setLoading(false) })
   }, [id])
 
-  useEffect(() => { loadData() }, [loadData])
+  useEffect(() => { loadData(); return () => { loadVersion.current += 1 } }, [loadData])
 
   async function handleDownload() {
     setDownloading(true)
@@ -214,10 +230,11 @@ export default function SaleDetailPage() {
   }
 
   if (loading) return <LoadingState message="Loading sale…" />
-  if (error)   return <div className="mt-4"><ErrorState message={error} /></div>
+  if (error)   return <div className="mt-4"><ErrorState message={error} /><Button variant="outline" onClick={loadData}>Retry loading sale</Button></div>
 
+  const clientContext = `${client ? `${client.first_name} ${client.last_name}` : 'Name unavailable'} · Client #${sale.client_id}`
   return (
-    <div>
+    <div className="sale-detail min-w-0">
       {/* Breadcrumb */}
       <div className="mb-4">
         <Link
@@ -233,43 +250,47 @@ export default function SaleDetailPage() {
       <PageHeader
         title={`Sale #${sale.id}`}
         subtitle={
-          <span className="flex items-center gap-2">
+          <span className="flex flex-wrap items-center gap-2">
             {sale.sale_date}
             <Badge variant={STATUS_VARIANT[sale.payment_status] ?? 'neutral'}>
               {sale.payment_status}
             </Badge>
+            {sale.package_service_id && <Badge variant={sale.canceled_at ? 'danger' : 'info'}>{sale.canceled_at ? 'Canceled package' : 'Treatment package'}</Badge>}
           </span>
         }
       >
         {isAdmin && <Button variant="outline" size="sm" onClick={() => setCorrectionOpen(true)}>Correct Sale</Button>}
         <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloading}>
           <Download className="h-4 w-4" />
-          {downloading ? 'Generating…' : 'Download'}
+          {downloading ? 'Generating…' : 'Download Invoice'}
         </Button>
         <Button variant="secondary" size="sm" onClick={() => setEmailOpen(true)}>
           <Mail className="h-4 w-4" />
           Send Invoice
         </Button>
-        <Button size="sm" onClick={() => setPaymentOpen(true)}>
+        <Button size="sm" disabled={!history || Number(history.remaining_balance) <= 0} onClick={() => setPaymentOpen(true)}>
           <Plus className="h-4 w-4" /> Record Payment
         </Button>
       </PageHeader>
 
+      <div className="mb-4 text-sm wrap-anywhere"><p className="font-semibold">{clientContext}</p><p>{invoiceNumber} · {sale.sale_date}</p>{clientError && <p role="status">Client details unavailable: {clientError}. Use the client ID to verify this sale.</p>}{history && Number(history.remaining_balance) <= 0 && <p>No outstanding balance. Payment history remains available below.</p>}</div>
       {downloadError && <ErrorState message={downloadError} className="mb-4" />}
       {corrections.length > 0 && <p className="text-sm mb-4" role="status">Corrected invoice · revision {corrections[0].revision}. The invoice number is unchanged; previous values are preserved below.</p>}
 
       {/* Payment summary stats */}
       {history && (
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <StatCard label="Total" value={formatCurrency(history.total_amount)} accent="neutral" />
-          <StatCard label="Paid" value={formatCurrency(history.total_paid)} accent="success" />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <StatCard label="Total billed" value={formatCurrency(history.total_amount)} accent="neutral" />
+          <StatCard label="Recorded payments" value={formatCurrency(history.total_paid)} accent="success" />
           <StatCard
-            label="Remaining"
+            label="Outstanding Payment"
             value={formatCurrency(history.remaining_balance)}
             accent={history.remaining_balance > 0 ? 'danger' : 'success'}
           />
         </div>
       )}
+
+      {packageProgress && packageTreatment && <PackageSessions clientContext={clientContext} key={`${sale.id}-${packageProgress.version}`} sale={sale} progress={packageProgress} treatment={packageTreatment} balance={history.remaining_balance} onChanged={loadData} />}
 
       {/* Line items */}
       <Card className="mb-5">
@@ -281,6 +302,7 @@ export default function SaleDetailPage() {
         </CardHeader>
         <CardContent className="p-0">
           <DataTable
+            mobileRows={sale.items.map((item) => <MobileCard key={item.id}><strong className="wrap-anywhere">{item.description}</strong><MobileField label="Quantity" value={item.quantity} /><MobileField label="Unit price" value={formatCurrency(item.unit_price)} /><MobileField label="Line total" value={formatCurrency(item.line_total)} /></MobileCard>)}
             columns={['Description', 'Qty', 'Unit Price', 'Total']}
             rows={sale.items.map((item) => [
               <span className="font-medium">{item.description}</span>,
@@ -304,6 +326,7 @@ export default function SaleDetailPage() {
               <EmptyState title="No payments recorded yet" description="Use + Record Payment to add one." />
             ) : (
               <DataTable
+                mobileRows={history.payments.map((payment) => <MobileCard key={payment.id} actions={isAdmin && payment.status === 'recorded' ? <Button variant="outline" onClick={() => setVoidingPayment(payment)}>Void payment</Button> : null}><strong>{payment.receipt_number}</strong><Badge variant={payment.status === 'voided' ? 'danger' : 'success'}>{payment.status}</Badge><MobileField label="Date" value={payment.payment_date} /><MobileField label="Method" value={payment.payment_method || 'Not recorded'} /><MobileField label="Reference" value={payment.reference_number || 'Not recorded'} /><MobileField label="Amount" value={formatCurrency(payment.amount)} /><MobileField label={payment.status === 'voided' ? 'Void reason' : 'Notes'} value={payment.status === 'voided' ? payment.void_reason : payment.notes} /></MobileCard>)}
                 columns={['Date', 'Receipt', 'Method', 'Reference', 'Amount', 'Status', 'Notes', '']}
                 rows={history.payments.map((p) => [
                   <span className="font-medium whitespace-nowrap">{p.payment_date}</span>,
@@ -335,17 +358,18 @@ export default function SaleDetailPage() {
               <h3 className="font-semibold">{label}</h3>
               <p className="text-sm">{snapshot.sale_date} · {formatCurrency(snapshot.total_amount)} · {snapshot.payment_status}</p>
               <p className="text-sm">Notes: {snapshot.notes || '—'}</p>
-              <DataTable columns={['Description', 'Qty', 'Unit Price', 'Total']} rows={snapshot.items.map((item) => [item.description, item.quantity, formatCurrency(item.unit_price), formatCurrency(item.line_total)])} />
+              <DataTable mobileRows={snapshot.items.map((item, index) => <MobileCard key={item.id ?? index}><strong className="wrap-anywhere">{item.description}</strong><MobileField label="Quantity" value={item.quantity} /><MobileField label="Unit price" value={formatCurrency(item.unit_price)} /><MobileField label="Line total" value={formatCurrency(item.line_total)} /></MobileCard>)} columns={['Description', 'Qty', 'Unit Price', 'Total']} rows={snapshot.items.map((item) => [item.description, item.quantity, formatCurrency(item.unit_price), formatCurrency(item.line_total)])} />
             </section>)}
           </details>)}
         </CardContent>
       </Card>}
-      {correctionOpen && <SaleForm open={correctionOpen} sale={sale} onClose={() => setCorrectionOpen(false)} onSaved={() => { setCorrectionOpen(false); loadData() }} onReload={() => { setCorrectionOpen(false); loadData() }} />}
+      {correctionOpen && <SaleForm clientContext={clientContext} open={correctionOpen} sale={sale} onClose={() => setCorrectionOpen(false)} onSaved={() => { setCorrectionOpen(false); loadData() }} onReload={() => { setCorrectionOpen(false); loadData() }} />}
       <SendInvoiceDialog
+        key={`${id}-${client?.email || ''}`}
         open={emailOpen}
         onClose={() => setEmailOpen(false)}
         saleId={Number(id)}
-        clientEmail={clientEmail}
+        clientEmail={client?.email || ''}
         invoiceNumber={invoiceNumber}
       />
 
@@ -354,12 +378,15 @@ export default function SaleDetailPage() {
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
         saleId={Number(id)}
-        remainingBalance={history?.remaining_balance ?? null}
+        context={`${clientContext} · Sale #${sale.id} · ${invoiceNumber}`}
+        remainingBalance={history ? Number(history.remaining_balance) : null}
         onSaved={() => { setPaymentOpen(false); loadData() }}
       />
 
       {voidingPayment && (
         <VoidPaymentDialog
+          clientContext={clientContext}
+          saleId={sale.id}
           payment={voidingPayment}
           onClose={() => setVoidingPayment(null)}
           onSaved={() => { setVoidingPayment(null); loadData() }}

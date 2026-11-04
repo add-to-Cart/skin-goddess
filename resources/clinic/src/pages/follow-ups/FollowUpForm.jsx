@@ -3,6 +3,8 @@ import followUpsService from '@/services/followUpsService'
 import clientsService from '@/services/clientsService'
 import { todayISO } from '@/lib/utils'
 import FormDialog, { FormField } from '@/components/shared/FormDialog'
+import SearchSelect from '@/components/shared/SearchSelect'
+import { clientLabel } from '@/lib/lookupLabels'
 import { Input } from '@/components/ui/input'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -26,9 +28,9 @@ export default function FollowUpForm({
   onSaved,
   defaultClientId = null,
   followUp = null,
+  clientContext = '',
 }) {
   const isEdit = Boolean(followUp)
-  const [clients, setClients]     = useState([])
   const [clientId, setClientId]   = useState('')
   const [date, setDate]           = useState('')
   const [status, setStatus]       = useState('upcoming')
@@ -39,10 +41,6 @@ export default function FollowUpForm({
 
   useEffect(() => {
     if (!open) return
-
-    if (!defaultClientId && !isEdit) {
-      clientsService.getAll().then(setClients).catch(() => {})
-    }
 
     if (followUp) {
       setClientId(String(followUp.client_id))
@@ -57,7 +55,7 @@ export default function FollowUpForm({
     }
     setErrors({})
     setApiError(null)
-  }, [open])
+  }, [open, defaultClientId, followUp, isEdit])
 
   function validate() {
     const e = {}
@@ -68,6 +66,7 @@ export default function FollowUpForm({
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (submitting) return
     const v = validate()
     if (Object.keys(v).length) { setErrors(v); return }
 
@@ -103,7 +102,7 @@ export default function FollowUpForm({
       open={open}
       onClose={onClose}
       title={isEdit ? 'Edit Follow-up' : 'Schedule Follow-up'}
-      description="Set a reminder for a client's return visit."
+      description={clientContext || (isEdit ? `Client #${followUp.client_id} · Reminder #${followUp.id}` : "Set a reminder for a client’s return visit.")}
       onSubmit={handleSubmit}
       submitting={submitting}
       submitLabel={isEdit ? 'Save Changes' : 'Schedule'}
@@ -111,19 +110,7 @@ export default function FollowUpForm({
     >
       {!defaultClientId && !isEdit && (
         <FormField label="Client" required error={errors.clientId}>
-          <Select value={clientId} onValueChange={setClientId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select client…" />
-            </SelectTrigger>
-            <SelectContent>
-              {clients.map((c) => (
-                <SelectItem key={c.id} value={String(c.id)}>
-                  {c.first_name} {c.last_name}
-                  {c.phone ? ` — ${c.phone}` : ''}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <SearchSelect searchHint="Name, phone or #ID — at least 2 characters." aria-label="Client" value={clientId} onChange={setClientId} search={clientsService.lookup} getLabel={clientLabel} />
         </FormField>
       )}
 
@@ -132,7 +119,7 @@ export default function FollowUpForm({
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          min={todayISO()}
+          min={isEdit ? undefined : todayISO()}
         />
       </FormField>
 
@@ -163,7 +150,6 @@ export default function FollowUpForm({
           }}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Optional notes about this follow-up…"
         />
       </FormField>
     </FormDialog>

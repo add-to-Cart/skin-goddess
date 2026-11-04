@@ -15,6 +15,7 @@ export default function LoginPage() {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (loading) return
     if (!username || !password) {
       setError('Enter your username and password.')
       return
@@ -40,8 +41,7 @@ export default function LoginPage() {
         </div>
 
         <div className="login-intro">
-          <h1 id="login-heading">Clinic sign-in</h1>
-          <p>Use your clinic account to access client records.</p>
+          <h1 id="login-heading">Sign in</h1>
         </div>
 
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
@@ -55,7 +55,6 @@ export default function LoginPage() {
               autoFocus
               value={username}
               onChange={(e) => { setUsername(e.target.value); setError(null) }}
-              placeholder="Your username"
             />
           </div>
 
@@ -68,7 +67,6 @@ export default function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={(e) => { setPassword(e.target.value); setError(null) }}
-              placeholder="Your password"
             />
           </div>
 
@@ -90,7 +88,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <p className="login-footer">Private clinic portal</p>
+
       </section>
     </main>
   )

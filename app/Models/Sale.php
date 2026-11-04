@@ -16,6 +16,16 @@ use Illuminate\Support\Carbon;
  * @property string $payment_status
  * @property string|null $notes
  * @property int $version
+ * @property int|null $package_service_id
+ * @property int|null $included_sessions
+ * @property string|null $package_purchase_key
+ * @property string|null $package_purchase_fingerprint
+ * @property Carbon|null $canceled_at
+ * @property int|null $canceled_by_user_id
+ * @property string|null $cancellation_reason
+ * @property-read ClinicUser|null $canceled_by
+ * @property-read Service|null $package_service
+ * @property-read Collection<int, Procedure> $package_procedures
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property-read Client $client
@@ -32,7 +42,12 @@ class Sale extends Model
         'total_amount',
         'payment_status',
         'notes',
+        'package_service_id',
+        'included_sessions',
+        'package_purchase_key',
     ];
+
+    protected $hidden = ['package_purchase_fingerprint'];
 
     /** @return array<string, string> */
     protected function casts(): array
@@ -41,6 +56,10 @@ class Sale extends Model
             'sale_date' => 'date:Y-m-d',
             'total_amount' => 'decimal:2',
             'version' => 'integer',
+            'package_service_id' => 'integer',
+            'included_sessions' => 'integer',
+            'canceled_at' => 'datetime',
+            'canceled_by_user_id' => 'integer',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
         ];
@@ -62,5 +81,23 @@ class Sale extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class, 'sale_id');
+    }
+
+    /** @return BelongsTo<Service, $this> */
+    public function package_service(): BelongsTo
+    {
+        return $this->belongsTo(Service::class, 'package_service_id');
+    }
+
+    /** @return HasMany<Procedure, $this> */
+    public function package_procedures(): HasMany
+    {
+        return $this->hasMany(Procedure::class, 'package_sale_id');
+    }
+
+    /** @return BelongsTo<ClinicUser, $this> */
+    public function canceled_by(): BelongsTo
+    {
+        return $this->belongsTo(ClinicUser::class, 'canceled_by_user_id');
     }
 }

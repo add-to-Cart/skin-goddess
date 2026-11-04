@@ -1,8 +1,10 @@
-import { useEffect, useState, useCallback } from 'react'
+import StatusFilter from '@/components/shared/StatusFilter'
+import RecordSearch from '@/components/shared/RecordSearch'
+import RecordPagination from '@/components/shared/RecordPagination'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { CalendarClock, Plus } from 'lucide-react'
+import { CalendarClock, Plus, Pencil } from 'lucide-react'
 import followUpsService from '@/services/followUpsService'
-import clientsService from '@/services/clientsService'
 import PageHeader from '@/components/shared/PageHeader'
 import LoadingState from '@/components/shared/LoadingState'
 import ErrorState from '@/components/shared/ErrorState'
@@ -22,6 +24,9 @@ const STATUS_VARIANT = {
 }
 
 export default function FollowUpsPage() {
+  const [search, setSearch] = useState('')
+  const [query, setQuery] = useState({ search: '', cursor: null })
+  const [page, setPage] = useState({})
   const [items, setItems]          = useState([])
   const [clientMap, setClientMap]  = useState({})
   const [overdueCount, setOverdue] = useState(0)
@@ -30,34 +35,49 @@ export default function FollowUpsPage() {
   const [error, setError]          = useState(null)
   const [formOpen, setFormOpen]    = useState(false)
   const [editing, setEditing]      = useState(null)
+  const [savingIds, setSavingIds] = useState(new Set())
+  const pendingIds = useRef(new Set())
+  const loadVersion = useRef(0)
+  const [notice, setNotice] = useState('')
 
   const loadAll = useCallback(() => {
     const params = statusFilter !== 'all' ? { status: statusFilter } : {}
+    const version = ++loadVersion.current
     setLoading(true)
-    Promise.all([
-      followUpsService.getAll(params),
-      followUpsService.getOverdue(),
-      clientsService.getAll(),
+    setError(null)
+    return Promise.all([
+      followUpsService.getPage({ ...params, ...query, include_client: true }),
+      followUpsService.getOverdueCount(),
     ])
-      .then(([all, overdue, clients]) => {
+      .then(([result, overdue]) => {
+        if (version !== loadVersion.current) return
+        const all = result.data
+        setPage(result)
         setItems(all)
-        setOverdue(overdue.length)
+        setOverdue(overdue.count)
         const cm = {}
-        clients.forEach((c) => { cm[c.id] = `${c.first_name} ${c.last_name}` })
+        all.forEach((row) => { if (row.client) cm[row.client_id] = `${row.client.first_name} ${row.client.last_name}` })
         setClientMap(cm)
       })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [statusFilter])
+      .catch((e) => { if (version === loadVersion.current) setError(e.message) })
+      .finally(() => { if (version === loadVersion.current) setLoading(false) })
+  }, [statusFilter, query])
 
-  useEffect(() => { loadAll() }, [loadAll])
+  useEffect(() => { loadAll(); return () => { loadVersion.current += 1 } }, [loadAll])
 
   async function markComplete(id) {
+    if (pendingIds.current.has(id)) return
+    pendingIds.current.add(id)
+    setSavingIds(new Set(pendingIds.current))
     try {
       await followUpsService.update(id, { status: 'completed' })
-      loadAll()
+      setNotice(`Reminder #${id} marked completed.`)
+      await loadAll()
     } catch (e) {
-      alert(e.message)
+      setError(e.message)
+    } finally {
+      pendingIds.current.delete(id)
+      setSavingIds(new Set(pendingIds.current))
     }
   }
 
@@ -70,46 +90,31 @@ export default function FollowUpsPage() {
   )
 
   return (
-    <div>
+    <div className="interactive-list min-w-0">
       <PageHeader title="Follow-ups" subtitle="Track client return visits">
         <Button size="sm" onClick={() => { setEditing(null); setFormOpen(true) }}>
           <Plus className="h-4 w-4" /> Add Follow-up
         </Button>
       </PageHeader>
 
-      {overdueCount > 0 && (
+      {notice && <p className="mb-4 text-sm" role="status">{notice}</p>}
+      {!loading && !error && overdueCount > 0 && (
         <ErrorState
           className="mb-4"
-          message={`${overdueCount} overdue follow-up${overdueCount !== 1 ? 's' : ''} — clients who have not returned yet.`}
+          message={`${overdueCount} overdue follow-up${overdueCount !== 1 ? 's' : ''} — reminders awaiting review.`}
         />
       )}
 
-      {/* Status filter tabs */}
-      <div className="flex items-center gap-1 mb-5 flex-wrap">
-        {STATUS_FILTERS.map((s) => (
-          <button
-            key={s}
-            onClick={() => setStatus(s)}
-            className="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
-            style={{
-              background: statusFilter === s ? 'var(--color-brand)' : 'var(--color-surface)',
-              color: statusFilter === s ? '#fff' : 'var(--color-text-muted)',
-              border: `1px solid ${statusFilter === s ? 'var(--color-brand)' : 'var(--color-border)'}`,
-            }}
-          >
-            {s.charAt(0).toUpperCase() + s.slice(1)}
-          </button>
-        ))}
-        <span className="ml-auto text-sm" style={{ color: 'var(--color-text-muted)' }}>
-          {items.length} record{items.length !== 1 ? 's' : ''}
-        </span>
-      </div>
+      <RecordSearch label="Search follow-ups" value={search} onChange={setSearch} onSearch={() => setQuery({ search: search.trim(), cursor: null })}>
+        <StatusFilter label="Status" value={statusFilter} options={STATUS_FILTERS} onChange={(status) => { setStatus(status); setQuery((current) => ({ ...current, cursor: null })) }} />
+      </RecordSearch>
+      <p className="record-results-summary" role="status">{loading ? 'Loading…' : error ? 'Results unavailable' : `${items.length} reminders`}</p>
 
       {error && <ErrorState message={error} className="mb-4" />}
 
       {loading ? (
         <LoadingState message="Loading follow-ups…" />
-      ) : (
+      ) : error ? <div><p className="text-sm mb-3">{notice ? 'The action succeeded, but the worklist may need refreshing. Do not repeat a saved action.' : 'Follow-up results could not be confirmed.'}</p><Button variant="outline" onClick={loadAll}>Retry follow-ups</Button></div> : (
         <DataTable
           columns={['Date', 'Client', 'Status', 'Notes', '']}
           rows={items.map((f) => [
@@ -129,13 +134,11 @@ export default function FollowUpsPage() {
               {f.notes ?? '—'}
             </span>,
             f.status !== 'completed' && f.status !== 'cancelled' ? (
-              <div className="flex gap-1">
-                <Button variant="ghost" size="sm" onClick={() => markComplete(f.id)}>
-                  Mark done
+              <div className="flex flex-wrap gap-1">
+                <Button variant="ghost" size="sm" disabled={savingIds.has(f.id)} onClick={() => markComplete(f.id)}>
+                  {savingIds.has(f.id) ? 'Saving…' : 'Mark done'}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => { setEditing(f); setFormOpen(true) }}>
-                  Edit
-                </Button>
+                <Button variant="ghost" size="icon" disabled={savingIds.has(f.id)} title={`Edit reminder #${f.id}`} aria-label={`Edit reminder #${f.id}`} onClick={() => { setEditing(f); setFormOpen(true) }}><Pencil aria-hidden="true" /></Button>
               </div>
             ) : null,
           ])}
@@ -145,13 +148,14 @@ export default function FollowUpsPage() {
               actions={
                 <>
                   {f.status !== 'completed' && f.status !== 'cancelled' && (
-                    <Button variant="ghost" size="sm" onClick={() => markComplete(f.id)}>
-                      Mark done
+                    <Button variant="ghost" size="sm" disabled={savingIds.has(f.id)} onClick={() => markComplete(f.id)}>
+                      {savingIds.has(f.id) ? 'Saving…' : 'Mark done'}
                     </Button>
                   )}
+                  {f.status !== 'completed' && f.status !== 'cancelled' && <Button variant="ghost" size="icon" disabled={savingIds.has(f.id)} title={`Edit reminder #${f.id}`} aria-label={`Edit reminder #${f.id}`} onClick={() => { setEditing(f); setFormOpen(true) }}><Pencil aria-hidden="true" /></Button>}
                   <Link
                     to={`/clients/${f.client_id}`}
-                    className="text-sm hover:underline ml-auto"
+                    className="inline-flex items-center min-h-11 text-sm hover:underline ml-auto"
                     style={{ color: 'var(--color-brand-strong)' }}
                   >
                     View client →
@@ -173,10 +177,13 @@ export default function FollowUpsPage() {
         />
       )}
 
+      {!loading && !error && <RecordPagination page={page} cursor={query.cursor} onPage={(cursor) => setQuery((current) => ({ ...current, cursor }))} />}
+
       <FollowUpForm
         open={formOpen}
         onClose={() => { setFormOpen(false); setEditing(null) }}
-        onSaved={() => { setFormOpen(false); setEditing(null); loadAll() }}
+        onSaved={() => { setFormOpen(false); setEditing(null); setNotice('Reminder saved.'); loadAll() }}
+        clientContext={editing ? `${clientMap[editing.client_id] || 'Name unavailable'} · Client #${editing.client_id} · Reminder #${editing.id}` : ''}
         followUp={editing}
       />
     </div>

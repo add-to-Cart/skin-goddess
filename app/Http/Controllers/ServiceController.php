@@ -8,6 +8,19 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
+    public function lookup(Request $request): JsonResponse
+    {
+        $data = $request->validate(['search' => 'nullable|string|max:100']);
+        $search = trim($data['search'] ?? '');
+        if ($search === '') {
+            return response()->json(['data' => [], 'has_more' => false]);
+        }
+        $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], mb_strtolower($search)).'%';
+        $services = Service::where('is_active', true)->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$pattern])->select(['id', 'name', 'default_price'])->orderBy('name')->orderBy('id')->limit(21)->get();
+
+        return response()->json(['data' => $services->take(20)->values(), 'has_more' => $services->count() > 20]);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Service::query();

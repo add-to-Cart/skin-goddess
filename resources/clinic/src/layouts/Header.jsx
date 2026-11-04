@@ -17,11 +17,11 @@ export default function Header() {
   function signOut() { authService.logout(); navigate('/login', { replace: true }) }
 
   return <header className="clinic-topbar">
-    <Trigger asChild><Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation"><Menu size={20} /></Button></Trigger>
+    <Trigger asChild><Button variant="ghost" size="icon" className="min-h-11 min-w-11 xl:hidden" aria-label="Open navigation"><Menu size={20} /></Button></Trigger>
     <div className="clinic-breadcrumb"><span className="hidden sm:inline">Clinic</span><span className="hidden sm:inline" aria-hidden="true">/</span><span>{title}</span></div>
     <div className="clinic-account">
       <div className="hidden sm:flex flex-col text-right"><span className="clinic-account-name">{username}</span><span className="clinic-account-role">{role === 'admin' ? 'Administrator' : 'Clinic staff'}</span></div>
-      <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out" title="Sign out"><LogOut size={17} /></Button>
+      <Button variant="ghost" size="icon" className="min-h-11 min-w-11" onClick={signOut} aria-label="Sign out" title="Sign out"><LogOut size={17} /></Button>
     </div>
   </header>
 }
