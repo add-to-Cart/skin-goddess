@@ -5,6 +5,7 @@ function buildQuery(params = {}) {
   if (params.paginated) qs.set('paginated', '1')
   if (params.cursor) qs.set('cursor', params.cursor)
   if (params.search) qs.set('search', params.search)
+  if (params.treatment_search) qs.set('treatment_search', params.treatment_search)
   if (params.include_client) qs.set('include_client', '1')
   if (params.client_id)  qs.set('client_id',  params.client_id)
   if (params.date_from)  qs.set('date_from',   params.date_from)

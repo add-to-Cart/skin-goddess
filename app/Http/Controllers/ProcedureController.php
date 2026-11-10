@@ -14,13 +14,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 class ProcedureController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $request->validate(['search' => 'nullable|string|max:100', 'paginated' => 'sometimes|boolean', 'cursor' => 'nullable|string|max:2000']);
+        $request->validate(['search' => 'nullable|string|max:100', 'treatment_search' => 'nullable|string|max:100', 'paginated' => 'sometimes|boolean', 'cursor' => 'nullable|string|max:2000']);
         $query = Procedure::with(['supplies_used', 'package_sale:id,canceled_at']);
         if ($search = trim($request->string('search')->toString())) {
             $query->where(function ($matches) use ($search): void {
@@ -32,6 +33,14 @@ class ProcedureController extends Controller
         }
         if ($request->boolean('include_client')) {
             $query->with(['client:id,first_name,last_name,is_active', 'service:id,name']);
+        }
+        $treatmentSearch = trim($request->string('treatment_search')->toString());
+        if ($treatmentSearch !== '') {
+            $pattern = '%'.str_replace(['!', '%', '_'], ['!!', '!%', '!_'], Str::lower($treatmentSearch)).'%';
+            $query->where(function ($matches) use ($pattern): void {
+                $matches->whereHas('service', fn ($service) => $service->whereRaw("LOWER(name) LIKE ? ESCAPE '!'", [$pattern]))
+                    ->orWhereRaw("LOWER(notes) LIKE ? ESCAPE '!'", [$pattern]);
+            });
         }
         if ($client = $request->input('client_id')) {
             $query->where('client_id', $client);
@@ -153,7 +162,7 @@ class ProcedureController extends Controller
         }
         $data = $request->validate($rules);
         $procedure = DB::transaction(function () use ($data) {
-            $this->activeService($data['service_id']);
+            $data['price'] = $this->activeService($data['service_id'])->default_price;
             $supplies = $data['supplies'] ?? [];
             unset($data['supplies']);
             $procedure = Procedure::create($data);
@@ -174,8 +183,8 @@ class ProcedureController extends Controller
         $procedure = DB::transaction(function () use ($data, $id) {
             $procedure = Procedure::lockForUpdate()->findOrFail($id);
             abort_if($procedure->package_sale_id !== null, 409, 'Completed package sessions cannot be edited. An audited administrator correction is required.');
-            if (isset($data['service_id']) && $data['service_id'] !== $procedure->service_id) {
-                $this->activeService($data['service_id']);
+            if (isset($data['service_id']) && (int) $data['service_id'] !== $procedure->service_id) {
+                $data['price'] = $this->activeService($data['service_id'])->default_price;
             }
             $procedure->update($data);
 
@@ -230,10 +239,12 @@ class ProcedureController extends Controller
         return $supply;
     }
 
-    private function activeService(int $id): void
+    private function activeService(int $id): Service
     {
         $service = Service::lockForUpdate()->findOrFail($id);
         abort_unless($service->is_active, 400, 'Inactive treatments and services cannot be used for new treatment records.');
+
+        return $service;
     }
 
     /** @return array<string, string> */
@@ -241,7 +252,7 @@ class ProcedureController extends Controller
     {
         $required = $updating ? 'sometimes|required' : 'required';
 
-        $rules = ['package_sale_id' => 'prohibited', 'completion_key' => 'prohibited', 'completion_fingerprint' => 'prohibited', 'completed_by_user_id' => 'prohibited', 'service_id' => "$required|integer|exists:services,id", 'procedure_date' => "$required|date_format:Y-m-d", 'session_number' => 'nullable|integer|min:1', 'price' => 'nullable|numeric|min:0|max:99999999.99|decimal:0,2', 'next_follow_up' => 'nullable|date_format:Y-m-d', 'notes' => 'nullable|string'];
+        $rules = ['package_sale_id' => 'prohibited', 'completion_key' => 'prohibited', 'completion_fingerprint' => 'prohibited', 'completed_by_user_id' => 'prohibited', 'service_id' => "$required|integer|exists:services,id", 'procedure_date' => "$required|date_format:Y-m-d", 'session_number' => 'nullable|integer|min:1', 'price' => 'missing', 'next_follow_up' => 'nullable|date_format:Y-m-d', 'notes' => 'nullable|string'];
         $rules += ['reversed_at' => 'prohibited', 'reversed_by_user_id' => 'prohibited', 'reversal_reason' => 'prohibited'];
         if (! $updating) {
             $rules['client_id'] = 'required|integer|exists:clients,id';

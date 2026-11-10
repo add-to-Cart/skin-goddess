@@ -66,7 +66,7 @@ export default function PackageSessions({ sale, progress, treatment, clientConte
         <div className="flex flex-wrap justify-between gap-2"><strong>Session #{procedure.session_number} · {procedure.procedure_date}</strong><Badge variant={procedure.reversed_at ? 'danger' : 'success'}>{procedure.reversed_at ? 'Reversed' : 'Completed'}</Badge></div>
         <p className="text-sm">Recorded by {procedure.completed_by?.username ?? `account #${procedure.completed_by_user_id}`} · {dateTime(procedure.created_at)}</p>
         {procedure.notes && <p className="text-sm">Notes: {procedure.notes}</p>}
-        {procedure.next_follow_up && <p className="text-sm">Follow-up date: {procedure.next_follow_up} (reminders are scheduled separately).</p>}
+        {procedure.next_follow_up && <p className="text-sm">Return date: {procedure.next_follow_up}</p>}
         <details className="text-sm"><summary>Supplies recorded: {procedure.supplies_used.length}</summary><ul>{procedure.supplies_used.map((supply) => <li key={supply.id}>{supply.inventory_item?.name ?? `Supply #${supply.inventory_item_id}`} · {supply.quantity_used} {supply.inventory_item?.unit ?? ''}</li>)}</ul></details>
         {procedure.reversed_at && <p className="text-sm">Reversed by {procedure.reversed_by?.username ?? `account #${procedure.reversed_by_user_id}`} · {dateTime(procedure.reversed_at)} · Reason: {procedure.reversal_reason}. Supplies remain recorded.</p>}
         {isAdmin && !procedure.reversed_at && <Button variant="outline" size="sm" onClick={() => setAudit({ procedure })}>Reverse Session #{procedure.session_number}</Button>}

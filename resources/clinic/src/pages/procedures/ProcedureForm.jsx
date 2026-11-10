@@ -12,23 +12,27 @@ import { clientLabel, serviceLabel } from '@/lib/lookupLabels'
 
 export default function ProcedureForm({ open, onClose, onSaved, procedure = null, defaultClientId = null, serviceMap = null, clientName = '' }) {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ client_id: '', service_id: '', procedure_date: todayISO(), price: '', next_follow_up: '', notes: '' })
+  const [form, setForm] = useState({ client_id: '', service_id: '', procedure_date: todayISO(), next_follow_up: '', notes: '' })
+  const [selectedService, setSelectedService] = useState(null)
   const [error, setError] = useState(null)
   const [saving, setSaving] = useState(false)
   const [billingMode, setBillingMode] = useState('ordinary')
   const [packages, setPackages] = useState([])
   const [packageId, setPackageId] = useState('')
   const editing = Boolean(procedure)
+  const keepsRecordedPrice = editing && form.service_id === String(procedure.service_id)
+  const price = keepsRecordedPrice ? procedure.price : selectedService?.default_price
 
   useEffect(() => {
     if (!open) return
     setError(null)
     setBillingMode('ordinary')
     setPackageId('')
+    setSelectedService(null)
     setForm(procedure ? {
       client_id: String(procedure.client_id), service_id: String(procedure.service_id), procedure_date: procedure.procedure_date,
-      price: procedure.price ?? '', next_follow_up: procedure.next_follow_up ?? '', notes: procedure.notes ?? '',
-    } : { client_id: defaultClientId ? String(defaultClientId) : '', service_id: '', procedure_date: todayISO(), price: '', next_follow_up: '', notes: '' })
+      next_follow_up: procedure.next_follow_up ?? '', notes: procedure.notes ?? '',
+    } : { client_id: defaultClientId ? String(defaultClientId) : '', service_id: '', procedure_date: todayISO(), next_follow_up: '', notes: '' })
   }, [open, procedure, defaultClientId, serviceMap, editing])
 
   useEffect(() => {
@@ -48,9 +52,9 @@ export default function ProcedureForm({ open, onClose, onSaved, procedure = null
       navigate(`/sales/${packageId}`)
       return
     }
-    if (!editing && (!form.client_id || !form.service_id)) { setError('Choose a client and treatment.'); return }
+    if (!form.client_id || !form.service_id) { setError('Choose a client and treatment.'); return }
     setSaving(true); setError(null)
-    const payload = { ...form, service_id: Number(form.service_id), price: form.price === '' ? null : Number(form.price), next_follow_up: form.next_follow_up || null, notes: form.notes.trim() || null }
+    const payload = { ...form, service_id: Number(form.service_id), next_follow_up: form.next_follow_up || null, notes: form.notes.trim() || null }
     if (!editing) payload.client_id = Number(form.client_id)
     try { editing ? await proceduresService.update(procedure.id, payload) : await proceduresService.create(payload); onSaved() } catch (e) { setError(e.message) } finally { setSaving(false) }
   }
@@ -62,10 +66,12 @@ export default function ProcedureForm({ open, onClose, onSaved, procedure = null
       <FormField label="Purchased package" required><select aria-label="Purchased package" className="w-full rounded-md border p-2" value={packageId} onChange={(event) => setPackageId(event.target.value)}><option value="">Choose the exact purchase</option>{packages.filter((sale) => String(sale.client_id) === form.client_id).map((sale) => <option key={sale.id} value={sale.id}>Purchase #{sale.id} · {sale.sale_date} · {sale.items[0]?.description} · {sale.included_sessions} included{sale.canceled_at ? ' · Canceled' : ''}</option>)}</select></FormField>
       <p className="text-sm">Open the purchase to review its balance, valid sessions and cancellation status before recording completion. Included sessions create no additional bill.</p>
     </> : <>
-    <FormField label="Treatment or Service" required><SearchSelect aria-label="Treatment or Service" value={form.service_id} search={servicesService.lookup} getLabel={serviceLabel} selectedLabel={serviceMap?.[form.service_id]} minLength={1} onChange={set('service_id')} /></FormField>
+    <FormField label="Treatment or Service" required><SearchSelect aria-label="Treatment or Service" value={form.service_id} search={servicesService.lookup} getLabel={serviceLabel} selectedLabel={serviceMap?.[form.service_id]} minLength={1} onChange={(value, service) => { set('service_id')(value); setSelectedService(service) }} /></FormField>
     <FormField label="Date" required><Input type="date" value={form.procedure_date} onChange={(e) => set('procedure_date')(e.target.value)} /></FormField>
-    <FormField label="Treatment price (₱)" hint="This records the treatment price, not a sale or money received."><Input type="number" min="0" step="0.01" value={form.price} onChange={(e) => set('price')(e.target.value)} /></FormField>
-    <FormField label="Follow-up date" hint="Schedule a reminder separately in Follow-ups."><Input type="date" value={form.next_follow_up} onChange={(e) => set('next_follow_up')(e.target.value)} /></FormField>
+    <FormField label={keepsRecordedPrice ? 'Recorded price (₱)' : 'Catalog price (₱)'} hint={keepsRecordedPrice ? undefined : 'Set in Treatment & Services.'}>
+      <Input readOnly value={form.service_id ? price ?? (keepsRecordedPrice ? 'No price recorded' : 'No catalog price set') : ''} placeholder="Select a treatment or service" />
+    </FormField>
+    <FormField label="Return date" hint="For a scheduled reminder, use Follow-ups."><Input type="date" value={form.next_follow_up} onChange={(e) => set('next_follow_up')(e.target.value)} /></FormField>
     <FormField label="Notes"><Input value={form.notes} onChange={(e) => set('notes')(e.target.value)} /></FormField>
     </>}
   </FormDialog>

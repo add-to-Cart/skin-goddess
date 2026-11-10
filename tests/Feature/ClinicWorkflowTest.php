@@ -26,6 +26,28 @@ test('clinic endpoints return 401 without a valid token', function () {
     $this->withToken('invalid-token')->getJson('/api/dashboard')->assertUnauthorized();
 });
 
+test('standalone treatment records use catalog prices and preserve the recorded price on unrelated edits', function () {
+    $this->withHeaders(clinicHeaders());
+    [$clientId, $serviceId] = clinicClientAndService($this);
+    $payload = ['client_id' => $clientId, 'service_id' => $serviceId, 'procedure_date' => '2026-10-14'];
+
+    $this->postJson('/api/procedures', [...$payload, 'price' => '1.00'])
+        ->assertUnprocessable()->assertJsonValidationErrors('price');
+    $procedure = $this->postJson('/api/procedures', $payload)
+        ->assertCreated()->assertJsonPath('price', 100)->json();
+    $recordUrl = '/api/procedures/'.$procedure['id'];
+
+    $this->patchJson('/api/services/'.$serviceId, ['default_price' => '125.50'])->assertOk();
+    $this->postJson('/api/procedures', $payload)->assertCreated()->assertJsonPath('price', 125.5);
+    $this->patchJson($recordUrl, ['price' => null])->assertUnprocessable()->assertJsonValidationErrors('price');
+    $this->patchJson($recordUrl, ['service_id' => (string) $serviceId, 'notes' => 'Updated treatment'])
+        ->assertOk()->assertJsonPath('price', 100);
+
+    $unpricedService = $this->postJson('/api/services', ['name' => 'Consultation'])->assertCreated()->json();
+    $this->patchJson($recordUrl, ['service_id' => $unpricedService['id']])
+        ->assertOk()->assertJsonPath('price', null);
+});
+
 test('expired or malformed encrypted credentials return 401', function () {
     $invalid = Crypt::encryptString(json_encode(['user_id' => [], 'expires_at' => time() + 3600]));
     $expired = Crypt::encryptString(json_encode(['user_id' => 1, 'expires_at' => time() - 1]));

@@ -139,3 +139,28 @@ test('transaction worklists search on the server and paginate without losing sam
     ['procedures', Procedure::class, 'procedure_date'],
     ['follow-ups', FollowUp::class, 'follow_up_date'],
 ]);
+
+test('client treatment history searches names and notes across pages for the selected client', function () {
+    $this->withHeaders(recordSearchHeaders());
+    $client = Client::create(['first_name' => 'Ana', 'last_name' => 'Santos']);
+    $otherClient = Client::create(['first_name' => 'Bea', 'last_name' => 'Santos']);
+    $facial = Service::create(['name' => 'Facial', 'is_active' => false]);
+    $peel = Service::create(['name' => 'Peel']);
+    $attributes = ['client_id' => $client->id, 'service_id' => $facial->id, 'procedure_date' => '2026-01-02'];
+    for ($index = 0; $index < 25; $index++) {
+        Procedure::create($attributes);
+    }
+    $olderMatch = Procedure::create([...$attributes, 'service_id' => $peel->id, 'procedure_date' => '2026-01-01', 'notes' => 'Facial aftercare']);
+    Procedure::create([...$attributes, 'service_id' => $peel->id]);
+    Procedure::create([...$attributes, 'client_id' => $otherClient->id]);
+
+    $params = ['client_id' => $client->id, 'paginated' => 1, 'include_client' => 1, 'treatment_search' => 'FACIAL'];
+    $first = $this->getJson('/api/procedures?'.http_build_query($params))
+        ->assertOk()->assertJsonCount(25, 'data')->assertJsonPath('data.0.service.name', 'Facial')->json();
+    $this->getJson('/api/procedures?'.http_build_query([...$params, 'cursor' => $first['next_cursor']]))
+        ->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.id', $olderMatch->id)->assertJsonPath('next_cursor', null);
+    $this->getJson('/api/procedures?'.http_build_query([...$params, 'treatment_search' => 'Ana Santos']))
+        ->assertOk()->assertJsonCount(0, 'data');
+    $this->getJson('/api/procedures?'.http_build_query([...$params, 'treatment_search' => '%']))
+        ->assertOk()->assertJsonCount(0, 'data');
+});

@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { Stethoscope, Plus, Pencil } from 'lucide-react'
 import proceduresService from '@/services/proceduresService'
-import { formatCurrency } from '@/lib/utils'
 import PageHeader from '@/components/shared/PageHeader'
 import LoadingState from '@/components/shared/LoadingState'
 import ErrorState from '@/components/shared/ErrorState'
@@ -56,6 +55,27 @@ export default function ProceduresPage() {
   function handleClose()  { setFormOpen(false); setEditing(null) }
   function handleSaved()  { handleClose(); setNotice('Treatment record saved.'); loadAll() }
 
+  function recordStatus(procedure) {
+    if (!procedure.package_sale_id) return <Badge variant="neutral">Recorded</Badge>
+
+    return <div className="flex flex-wrap gap-1">
+      <Badge variant={procedure.reversed_at ? 'danger' : 'success'}>
+        {procedure.reversed_at ? 'Reversed' : 'Completed package session'}
+      </Badge>
+      {procedure.package_sale?.canceled_at && <Badge variant="danger">Canceled package</Badge>}
+    </div>
+  }
+
+  function recordAction(procedure) {
+    return procedure.package_sale_id ? (
+      <Button variant="ghost" size="sm" asChild><Link to={`/sales/${procedure.package_sale_id}`}>View package</Link></Button>
+    ) : (
+      <Button variant="ghost" size="icon" title={`Edit treatment #${procedure.id}`} aria-label={`Edit treatment #${procedure.id}`} onClick={() => openEdit(procedure)}>
+        <Pencil aria-hidden="true" />
+      </Button>
+    )
+  }
+
   const empty = (
     <EmptyState icon={Stethoscope} title="No treatment records yet"
       description="Record the first treatment performed for a client.">
@@ -81,7 +101,8 @@ export default function ProceduresPage() {
         <LoadingState message="Loading treatment records…" />
       ) : error ? null : (
         <DataTable
-          columns={['Date', 'Client', 'Treatment or Service', 'History #', 'Treatment price', 'Follow-up', 'Supplies', '']}
+          columns={['Date', 'Client', 'Treatment or Service', 'Return date', 'Status', '']}
+          rowKeys={procedures.map((procedure) => procedure.id)}
           rows={procedures.map((p) => [
             <span className="font-medium whitespace-nowrap">{p.procedure_date}</span>,
             <Link to={`/clients/${p.client_id}`} className="font-medium hover:underline"
@@ -89,21 +110,17 @@ export default function ProceduresPage() {
               {clientMap[p.client_id] ?? `Client #${p.client_id}`}
             </Link>,
             <span>{serviceMap[p.service_id] ?? `Treatment / Service #${p.service_id}`}</span>,
-            <span>{p.session_number ?? '—'} {p.package_sale_id && <Badge variant={p.reversed_at ? 'danger' : 'success'}>{p.reversed_at ? 'Reversed' : 'Completed package session'}</Badge>}{p.package_sale?.canceled_at && <Badge variant="danger">Canceled package</Badge>}</span>,
-            <span>{p.package_sale_id ? 'Included in package' : p.price != null ? formatCurrency(p.price) : '—'}</span>,
             <span style={{ color: 'var(--color-text-muted)' }} className="whitespace-nowrap">
               {p.next_follow_up ?? '—'}
             </span>,
-            <Badge variant="neutral">
-              {p.supplies_used?.length ?? 0} item{(p.supplies_used?.length ?? 0) !== 1 ? 's' : ''}
-            </Badge>,
-            p.package_sale_id ? <Button variant="ghost" size="sm" asChild><Link to={`/sales/${p.package_sale_id}`}>Package #{p.package_sale_id}</Link></Button> : <Button variant="ghost" size="icon" title={`Edit treatment #${p.id}`} aria-label={`Edit treatment #${p.id}`} onClick={() => openEdit(p)}><Pencil aria-hidden="true" /></Button>,
+            recordStatus(p),
+            recordAction(p),
           ])}
           mobileRows={procedures.map((p) => (
             <MobileCard key={p.id}
               actions={
                 <>
-                  {p.package_sale_id ? <Button variant="ghost" size="sm" asChild><Link to={`/sales/${p.package_sale_id}`}>Package #{p.package_sale_id}</Link></Button> : <Button variant="ghost" size="icon" title={`Edit treatment #${p.id}`} aria-label={`Edit treatment #${p.id}`} onClick={() => openEdit(p)}><Pencil aria-hidden="true" /></Button>}
+                  {recordAction(p)}
                   <Link to={`/clients/${p.client_id}`} className="text-sm hover:underline ml-auto"
                     style={{ color: 'var(--color-brand-strong)' }}>
                     View client →
@@ -120,13 +137,8 @@ export default function ProceduresPage() {
                 </span>
               </div>
               <MobileField label="Client"   value={clientMap[p.client_id] ?? `Client #${p.client_id}`} />
-              <MobileField label="Session"  value={p.session_number ?? '—'} />
-              <MobileField label="Treatment price"    value={p.package_sale_id ? 'Included in package' : p.price != null ? formatCurrency(p.price) : '—'} />
-              {p.package_sale_id && <Badge variant={p.reversed_at ? 'danger' : 'success'}>{p.reversed_at ? 'Reversed' : 'Completed package session'}</Badge>}
-              {p.package_sale?.canceled_at && <Badge variant="danger">Canceled package</Badge>}
-              <MobileField label="Follow-up" value={p.next_follow_up ?? '—'} />
-              <MobileField label="Supplies"
-                value={`${p.supplies_used?.length ?? 0} item${(p.supplies_used?.length ?? 0) !== 1 ? 's' : ''}`} />
+              <MobileField label="Return date" value={p.next_follow_up ?? '—'} />
+              {recordStatus(p)}
             </MobileCard>
           ))}
           emptyState={empty}

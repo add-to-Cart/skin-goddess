@@ -1,5 +1,13 @@
 # Skin Goddess — GUI-1 audit
 
+## Client cards and treatment worklist — 10 November 2026
+
+- **Clients** uses a responsive grid of clickable cards with initials, name, status, and available contact information. Cards use a subtle hover shadow and a visible keyboard focus outline.
+- **Client profiles** show contact details and notes at the top of one page. Treatment history shows dates, treatments, return dates, and notes. Search matches treatment names or notes for that client across all pages.
+- **Treatment Records** shows the treatment date, client, treatment, return date, and status on desktop and mobile. Staff can add or edit standalone treatments and open the package linked to a session. The treatment form displays the catalog price as read-only.
+
+Earlier UI checkpoints follow.
+
 ## Search alignment, sales context and dashboard correction — 2 November 2026
 
 Owner screenshots identified a misaligned search submit button, ambiguous sales chevrons, crowded status buttons and verbose result summaries. Shared search controls now place the input and submit button together at a fixed 44px height, with labels above; search guidance remains available to assistive technology. Clients, treatments, sales and reminders share this composition. Sales payment status and reminder status use labeled native dropdowns. Refresh is a separate labeled icon. Counts and page totals are concise; the page scope remains explicit for money totals.

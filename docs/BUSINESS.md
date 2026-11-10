@@ -1,5 +1,13 @@
 # Skin Goddess: business audit
 
+## Current clinic workflow — 10 November 2026
+
+- **Clients** is the directory. A client profile keeps editable contact details and notes above read-only treatment history. Sales, balances, and package progress are handled in **Sales**.
+- **Treatment Records** is the worklist for recording and correcting treatments across clients. Standalone records save the selected service's catalog price from **Treatment & Services**. Later catalog changes apply to new records. Editing an existing record keeps its recorded price unless staff select a different service.
+- **Return date** records when the client should return, whether advised or required. Staff create and manage reminders separately in **Follow-ups**. Entering a return date does not create a reminder.
+
+The sections below document earlier checkpoints.
+
 ## Checkpoint 2E — package screens and acceptance checks, 25 October 2026
 
 The owner approved 2E with an explicit “yes” after the 2D checkpoint. Package purchase, completion, progress and administrator correction screens are now implemented in source. **They are not deployed to the operating clinic: its database and published frontend assets remain unchanged.** Earlier sections preserve the status at each checkpoint.
@@ -200,7 +208,7 @@ Purchase costs do not automatically become expenses. Recording a ₱5,000 purcha
 
 The dashboard shows today's billed sales and sale count, clients with treatment records today, new registrations, current outstanding balances, today's expenses, and reminders. **Staff can see these dashboard financial totals too**, even though detailed expenses and reports are restricted.
 
-The sales screen shows each bill and its payment status; sale details show payment history and balance. A client's profile shows total billed, which is not their remaining balance. The expense screen supports date and category filtering and totals.
+The sales screen shows each bill and its payment status. Sale details show payment history and balance. The expense screen supports date and category filtering and totals.
 
 Detailed reports exist behind the scenes for sales, expenses, balances, active stock, supply usage and follow-ups. They need developer assistance until a reports screen exists.
 

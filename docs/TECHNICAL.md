@@ -1,5 +1,14 @@
 # Skin Goddess: technical audit
 
+## Client and treatment workflow checkpoint — 10 November 2026
+
+- Client history requests cursor-paginated results from `GET /api/procedures` with `client_id`. The optional `treatment_search` filter matches service names and treatment notes. The clinic-wide worklist still uses its existing `search` parameter.
+- Standalone treatment writes derive `procedures.price` from `services.default_price` in the save transaction. The API rejects caller-supplied prices. Updates that keep the same service preserve the recorded price. A catalog service without a price saves a null price.
+- The **Return date** label uses the existing `procedures.next_follow_up` field. Reminder scheduling still uses separate `follow_ups` records. This checkpoint requires no schema migration.
+- The production frontend build and Pint passed. The focused record search suite passed all 18 tests. The clinic workflow and package session suites reported 48 passed and 2 skipped. The full suite was not run for this checkpoint. Repository-wide frontend lint reported existing errors outside the client directory changes.
+
+Earlier implementation and verification checkpoints follow.
+
 ## Checkpoint 2E — React integration and acceptance, 25 October 2026
 
 Authorization: explicit owner “yes” after the 2D report. All paths below are repository-relative. No dependencies, environment files, Laragon settings, payment algorithms or operating clinic data were changed. Three package migrations remain unapplied to the operating database; `resources/clinic/dist` was built for verification but not copied into published `public` assets. The pre-existing user edit to `resources/clinic/index.html` was preserved.

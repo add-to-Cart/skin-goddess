@@ -1,5 +1,11 @@
 # Skin Goddess — local clinic application
 
+## Project status — 10 November 2026
+
+The client directory uses person cards. Each profile keeps contact details and notes above searchable treatment history. Treatment Records is the clinic-wide worklist, Treatment & Services owns catalog pricing, Sales handles billing and package purchases, and Follow-ups manages scheduled reminders. A treatment's return date records when the client should return.
+
+See the [business workflow](docs/BUSINESS.md), [UI changes](docs/GUI-UX.md), and [technical verification](docs/TECHNICAL.md) for the current checkpoint.
+
 ## Daily operation
 
 1. Open the existing Laragon installation and click **Start All**.
@@ -16,12 +22,12 @@ The Apache host in `C:/laragon/etc/apache2/sites-enabled/01-skin-goddess.conf` l
 | Original feature | Laravel implementation | React integration | Business tables |
 | --- | --- | --- | --- |
 | Login, roles, users | ClinicAuthController, ClinicAuthentication | Existing login, protected pages, user management; same bearer request format | users |
-| Clients and profiles | ClientController, Eloquent relationships | Existing Clients and profile pages | clients |
-| Treatments and sessions | ServiceController, ProcedureController | Existing catalog, recording, editing and history forms | services, procedures, procedure_supplies |
+| Clients and profiles | ClientController, Eloquent relationships | Client cards and profiles with searchable treatment history | clients |
+| Treatments and sessions | ServiceController, ProcedureController | Catalog management, treatment worklist, and read-only catalog pricing when recording a treatment | services, procedures, procedure_supplies |
 | Stock, purchases and consumption | InventoryController; locked transactions | Original API functionality preserved; source has no inventory page or supply-entry form | inventory_items, inventory_purchases, inventory_purchase_items, inventory_transactions |
 | Sales, balances and receipts | SaleController, PaymentController; decimal arithmetic and sale locks | Existing sales, detail, partial-payment and void controls | sales, sale_items, payments |
 | Expenses | ExpenseController | Existing administrator expense page | expenses |
-| Follow-ups | FollowUpController | Existing reminders and client follow-up forms | follow_ups |
+| Follow-ups | FollowUpController | Dedicated reminder worklist and scheduling form | follow_ups |
 | Dashboard and reports | DashboardController, ReportController | Existing dashboard; source reports are API-only | Existing business tables |
 | PDF invoices | InvoiceController, original layout converted to Blade, Dompdf | Existing invoice download and send controls | sales, sale_items, payments, clients |
 

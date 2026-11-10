@@ -73,7 +73,7 @@ export default function PackageSessionForm({ sale, treatmentName, clientContext 
     <p className="text-sm">If correcting a reversed entry, do not deduct supplies that are already recorded in its history.</p>
     <fieldset disabled={saving || Boolean(pending) || !ready} className="contents">
       <FormField label="Completed treatment date" required><Input aria-label="Completed treatment date" type="date" max={todayISO()} value={date} onChange={(event) => setDate(event.target.value)} /></FormField>
-      <FormField label="Follow-up date"><Input aria-label="Package follow-up date" type="date" value={followUp} onChange={(event) => setFollowUp(event.target.value)} /></FormField>
+      <FormField label="Return date" hint="For a scheduled reminder, use Follow-ups."><Input aria-label="Return date" type="date" value={followUp} onChange={(event) => setFollowUp(event.target.value)} /></FormField>
       <FormField label="Treatment notes"><Input aria-label="Treatment notes" value={notes} onChange={(event) => setNotes(event.target.value)} /></FormField>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={noneUsed} onChange={(event) => { setNoneUsed(event.target.checked); if (event.target.checked) setSupplies([]) }} />No additional supplies used</label>
       {!noneUsed && <section className="flex flex-col gap-3" aria-label="Supplies used">
